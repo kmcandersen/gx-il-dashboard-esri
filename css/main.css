@@ -1,0 +1,13 @@
+/* * {
+  border: 1px solid red;
+} */
+
+#list-panel {
+  overflow: scroll;
+  height: 60vh;
+  width: 40vw;
+}
+
+button:focus {
+  outline-color: #a75000;
+}
