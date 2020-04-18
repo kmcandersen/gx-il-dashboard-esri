@@ -74,21 +74,26 @@ require([
     //these vars formerly outside whenLayerView method:
     var highlight;
     var allIncidents;
+
+    var populatePriorityList = () => {
+      const incidentSumm = countIncByGx(allIncidents);
+      const priorityListItem = createPXingItem(incidentSumm);
+      //add priority xings to dom
+      //if not initial load, remove existing list content first
+      const listContent = document.getElementById('list-content');
+      if (listContent) {
+        listContent.remove();
+      }
+      document
+        .getElementById('list-panel')
+        .insertAdjacentHTML('beforeend', priorityListItem);
+    };
+
     watchUtils.whenFalseOnce(layerView, 'updating', (value) => {
       if (!value) {
         layerView.queryFeatures().then((results) => {
           allIncidents = results.features;
-          const incidentSumm = countIncByGx(allIncidents);
-          const priorityListItem = createPXingItem(incidentSumm);
-          //add priority xings to dom
-          //if not initial load, remove existing list content first
-          const listContent = document.getElementById('list-content');
-          if (listContent) {
-            listContent.remove();
-          }
-          document
-            .getElementById('list-panel')
-            .insertAdjacentHTML('beforeend', priorityListItem);
+          populatePriorityList();
         });
       }
     });
@@ -145,18 +150,7 @@ require([
                   console.error(error);
                 }
               });
-
-              const incidentSumm = countIncByGx(allIncidents);
-              const priorityListItem = createPXingItem(incidentSumm);
-              //add priority xings to dom
-              //if not initial load, remove existing list content first
-              const listContent = document.getElementById('list-content');
-              if (listContent) {
-                listContent.remove();
-              }
-              document
-                .getElementById('list-panel')
-                .insertAdjacentHTML('beforeend', priorityListItem);
+              populatePriorityList();
             });
         }
       });
