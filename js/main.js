@@ -1,3 +1,4 @@
+//searchWidget implemented, but highlight, zoom don't work
 import { countIncByGx, createPXingItem } from './list_priority_xings.js';
 import { getIncidentsBySelGx, createIncItem } from './list_selected_xings.js';
 //import { geojsonLayer } from './../data/geojsonLayer.js';
@@ -13,8 +14,9 @@ require([
   'esri/layers/GeoJSONLayer',
   'esri/core/watchUtils',
   'esri/widgets/Home',
-], function (Map, MapView, GeoJSONLayer, watchUtils, Home) {
-  let layer = new GeoJSONLayer({
+  'esri/widgets/Search',
+], function (Map, MapView, GeoJSONLayer, watchUtils, Home, Search) {
+  let incidentLayer = new GeoJSONLayer({
     url: './data/gx_incidents.geojson',
     outFields: [
       'GXID',
@@ -33,11 +35,10 @@ require([
       'Latitude',
       'Longitude',
     ],
-    copyright: 'USGS Earthquakes',
-    title: 'USGS Earthquakes',
+    copyright: 'Federal Railroad Administration',
+    title: 'IL Grade Crossing Incidents',
     renderer: {
       type: 'simple',
-      field: 'mag',
       symbol: {
         type: 'simple-marker',
         color: 'orange',
@@ -47,15 +48,84 @@ require([
     },
   });
 
+  let crossingLayer = new GeoJSONLayer({
+    url: './data/il_crossings.geojson',
+    outFields: ['OBJECTID', 'CrossingID', 'Street', 'Station'],
+    copyright: 'Federal Railroad Administration',
+    title: 'IL Road-Rail Grade Crossings',
+    minScale: 2000000,
+    renderer: {
+      type: 'simple',
+      symbol: {
+        type: 'simple-marker',
+        //color: 'gray',
+        size: '6px',
+        outline: null,
+      },
+      // visualVariables: [
+      //   {
+      //     type: 'color',
+      //     valueExpression: '$view.scale',
+      //     stops: [
+      //       {
+      //         color: 'white',
+      //         value: 200,
+      //       },
+      //       {
+      //         color: 'red',
+      //         value: 2000000,
+      //       },
+      //     ],
+      //   },
+      // ],
+    },
+  });
+
+  //To fix Error: layer excluded bc type couldn't be determined
+  var fields = [
+    {
+      name: 'OBJECTID',
+      alias: 'ObjectID',
+      type: 'oid',
+    },
+    {
+      name: 'CrossingID',
+      alias: 'Crossing ID',
+      type: 'string',
+    },
+    {
+      name: 'Street',
+      alias: 'Street',
+      type: 'string',
+    },
+    {
+      name: 'Station',
+      alias: 'Station',
+      type: 'string',
+    },
+    {
+      name: 'Station',
+      alias: 'Station',
+      type: 'string',
+    },
+  ];
+
+  // add the array of fields to a feature layer
+  // created from client-side graphics
+  crossingLayer.set({
+    fields: fields,
+    objectIdField: 'OBJECTID',
+  });
+
   let map = new Map({
     basemap: 'dark-gray',
-    layers: [layer],
+    layers: [incidentLayer, crossingLayer],
   });
 
   let mapview = new MapView({
     container: 'mapview',
     map: map,
-    center: [-88.9840088995056, 39.76628316407406],
+    center: [-88.98, 40.0],
     //zoom: 6,
     scale: 4750000,
   });
@@ -64,38 +134,95 @@ require([
     view: mapview,
   });
 
+  //do the Search on a hidden/gray Gxings file, so only 1 sugg/xing
+
+  var searchWidget = new Search({
+    view: mapview,
+
+    includeDefaultSources: false,
+    locationEnabled: false,
+    resultGraphicEnabled: true,
+    sources: [
+      {
+        layer: crossingLayer,
+        searchFields: ['CrossingID', 'Street'],
+        suggestionTemplate: '{CrossingID} {Street}, City: {Station}',
+        displayField: 'Street',
+        exactMatch: false,
+        outFields: ['CrossingID', 'Street'],
+        name: 'Crossing ID or Street Name',
+        placeholder: 'Search Crossing ID or Street',
+        zoom: 12,
+      },
+    ],
+  });
+
+  //   var searchWidget = new Search({
+  //     view: mapview,
+  //     includeDefaultSources: false,
+  //     locationEnabled: false,
+  //     resultGraphicEnabled: true,
+  //     allPlaceholder: 'Crossing ID or Street',
+  //     sources: [
+  //       {
+  //         layer: crossingLayer,
+  //         searchFields: ['CrossingID'],
+  //         suggestionTemplate: '{CrossingID}: {Street}',
+  //         displayField: 'CrossingID',
+  //         exactMatch: false,
+  //         outFields: ['CrossingID'],
+  //         name: 'Crossing ID',
+  //         placeholder: 'Search Crossing ID',
+  //       },
+  //       {
+  //         layer: crossingLayer,
+  //         searchFields: ['Street'],
+  //         suggestionTemplate: '{{Street}, City: {Station}',
+  //         displayField: 'Street',
+  //         exactMatch: false,
+  //         outFields: ['Street'],
+  //         name: 'Street Name',
+  //         placeholder: 'Search Street',
+  //       },
+  //     ],
+  //   });
+
   // Adds home button
   mapview.ui.add(homeBtn, 'top-left');
   //necessary? layer loads wo it, but seen in samples
-  map.add(layer);
+  map.add(incidentLayer);
+  map.add(crossingLayer);
+
+  mapview.ui.add(searchWidget, {
+    position: 'top-right',
+  });
 
   //**Haven't been able to save query results to a var outside local scope, so info is accessible by other "components" */
-  mapview.whenLayerView(layer).then(function (layerView) {
+  mapview.whenLayerView(incidentLayer).then(function (layerView) {
+    //https://community.esri.com/message/776908-search-widgetin-onfocusout-in-47-causes-error-when-used-with-jquery
+    document.querySelector('.esri-search__input').onfocusout = null;
     //these vars formerly outside whenLayerView method:
     var highlight;
     var allIncidents;
-
-    var populatePriorityList = () => {
-      const incidentSumm = countIncByGx(allIncidents);
-      const priorityListItem = createPXingItem(incidentSumm);
-      //add priority xings to dom
-      //if not initial load, remove existing list content first
-      const listContent = document.getElementById('list-content');
-      if (listContent) {
-        listContent.remove();
-      }
-      document
-        .getElementById('list-panel')
-        .insertAdjacentHTML('beforeend', priorityListItem);
-    };
-
     watchUtils.whenFalseOnce(layerView, 'updating', (value) => {
       if (!value) {
         layerView.queryFeatures().then((results) => {
           allIncidents = results.features;
-          populatePriorityList();
+          const incidentSumm = countIncByGx(allIncidents);
+          const priorityListItem = createPXingItem(incidentSumm);
+          //add priority xings to dom
+          document
+            .getElementById('list-panel')
+            .insertAdjacentHTML('beforeend', priorityListItem);
         });
       }
+    });
+
+    searchWidget.on('select-result', function (event) {
+      mapview.goTo({
+        scale: 24414,
+      });
+      console.log('Search done', event.result.feature.attributes);
     });
 
     mapview.on('click', (event) => {
@@ -107,7 +234,7 @@ require([
         //return feature var, only if a feature (not empty area) is clicked
         if (response.results.length) {
           var feature = response.results.filter((result) => {
-            return result.graphic.layer === layer;
+            return result.graphic.layer === incidentLayer;
           })[0].graphic;
 
           // Highlight feature
@@ -145,12 +272,23 @@ require([
             .addEventListener('click', () => {
               highlight.remove();
 
-              mapview.goTo(layer.fullExtent).catch((error) => {
+              mapview.goTo(incidentLayer.fullExtent).catch((error) => {
                 if (error.name != 'AbortError') {
                   console.error(error);
                 }
               });
-              populatePriorityList();
+
+              const incidentSumm = countIncByGx(allIncidents);
+              const priorityListItem = createPXingItem(incidentSumm);
+              //add priority xings to dom
+              //if not initial load, remove existing list content first
+              const listContent = document.getElementById('list-content');
+              if (listContent) {
+                listContent.remove();
+              }
+              document
+                .getElementById('list-panel')
+                .insertAdjacentHTML('beforeend', priorityListItem);
             });
         }
       });
