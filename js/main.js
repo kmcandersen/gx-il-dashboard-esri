@@ -58,26 +58,10 @@ require([
       type: 'simple',
       symbol: {
         type: 'simple-marker',
-        //color: 'gray',
+        color: 'gray',
         size: '6px',
         outline: null,
       },
-      // visualVariables: [
-      //   {
-      //     type: 'color',
-      //     valueExpression: '$view.scale',
-      //     stops: [
-      //       {
-      //         color: 'white',
-      //         value: 200,
-      //       },
-      //       {
-      //         color: 'red',
-      //         value: 2000000,
-      //       },
-      //     ],
-      //   },
-      // ],
     },
   });
 
@@ -134,8 +118,6 @@ require([
     view: mapview,
   });
 
-  //do the Search on a hidden/gray Gxings file, so only 1 sugg/xing
-
   var searchWidget = new Search({
     view: mapview,
 
@@ -190,8 +172,8 @@ require([
   // Adds home button
   mapview.ui.add(homeBtn, 'top-left');
   //necessary? layer loads wo it, but seen in samples
-  map.add(incidentLayer);
   map.add(crossingLayer);
+  map.add(incidentLayer);
 
   mapview.ui.add(searchWidget, {
     position: 'top-right',
@@ -199,6 +181,7 @@ require([
 
   //**Haven't been able to save query results to a var outside local scope, so info is accessible by other "components" */
   mapview.whenLayerView(incidentLayer).then(function (layerView) {
+    console.log('layerView', layerView);
     //https://community.esri.com/message/776908-search-widgetin-onfocusout-in-47-causes-error-when-used-with-jquery
     document.querySelector('.esri-search__input').onfocusout = null;
     //these vars formerly outside whenLayerView method:
@@ -222,7 +205,15 @@ require([
       mapview.goTo({
         scale: 24414,
       });
-      console.log('Search done', event.result.feature.attributes);
+      //event.result.feature.layer.renderer.symbol.size = '18';
+      // event.result.feature.layer.renderer.symbol.color = {
+      //   r: 0,
+      //   g: 255,
+      //   b: 0,
+      //   a: 1,
+      // };
+      event.result.feature.layer.renderer.symbol.color = [0, 255, 0, 1];
+      console.log('Search done', event.result);
     });
 
     mapview.on('click', (event) => {
