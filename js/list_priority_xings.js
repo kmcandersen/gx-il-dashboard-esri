@@ -34,6 +34,8 @@ export const countIncByGx = (incidentsArr) => {
       }
     }
   }
+
+  //limit Priority list to crossings with > 2 incidents
   for (let k = 0; k < gxTally.length; k++) {
     for (let gx in gxTally[k]) {
       if (gxTally[k][gx].incidentTot > 2) {
