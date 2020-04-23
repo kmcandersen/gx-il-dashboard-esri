@@ -1,5 +1,5 @@
 //511 incidents, 448 unique crossings
-//import { runCountIncByGx } from './list_all_xings.js';
+import { countIncByGx } from './list_all_xings.js';
 
 require([
   'esri/Map',
@@ -26,8 +26,76 @@ require([
   // const url = URL.createObjectURL(blob);
   // const incidents = new GeoJSONLayer({ url });
 
+  let incidents = new GeoJSONLayer({
+    url: './data/gx_incidents.geojson',
+    outFields: [
+      'GXID',
+      'HIGHWAY',
+      'RAILROAD',
+      'PUBLIC',
+      'DATE',
+      'TIME',
+      'COUNTY',
+      'CITY',
+      'STATION',
+      'NARRATIVE',
+      'TOTINJ',
+      'TOTKLD',
+      'TYPVEH',
+      'TYPEQ',
+    ],
+    copyright: 'Federal Railroad Administration',
+    title: 'IL Grade Crossing Incidents',
+    visible: false,
+  });
+
+  let crossings = new GeoJSONLayer({
+    url: './data/il_crossings.geojson',
+    outFields: [
+      'OBJECTID',
+      'CrossingID',
+      'Street',
+      'Station',
+      'Latitude',
+      'Longitude',
+    ],
+    copyright: 'Federal Railroad Administration',
+    title: 'IL Grade Crossings',
+    visible: false,
+    ////To fix Error - layer excluded bc type couldn't be determined:
+    fields: [
+      {
+        name: 'OBJECTID',
+        alias: 'ObjectID',
+        type: 'oid',
+      },
+      {
+        name: 'CrossingID',
+        type: 'string',
+      },
+      {
+        name: 'Street',
+        type: 'string',
+      },
+      {
+        name: 'Station',
+        type: 'string',
+      },
+      {
+        name: 'Latitude',
+        type: 'double',
+      },
+      {
+        name: 'Longitude',
+        type: 'double',
+      },
+    ],
+    objectIdField: 'OBJECTID',
+  });
+
   let map = new Map({
     basemap: 'dark-gray',
+    layers: [incidents],
   });
 
   let mapview = new MapView({
@@ -39,7 +107,7 @@ require([
   });
 
   // create empty FeatureLayer
-  const newLayer = new FeatureLayer({
+  const incByCrossing = new FeatureLayer({
     // create an instance of esri/layers/support/Field for each field object
     title: 'Grade Crossings',
     fields: [
@@ -78,85 +146,104 @@ require([
       },
     },
   });
-  map.add(newLayer);
+  map.add(incByCrossing);
 
-  mapview.whenLayerView(newLayer).then(function () {
-    //promise to get ?? or wrong path
-    const incidents = JSON.parse('./data/gx_incidents.geojson');
-    //runCountIncByGx();
-    console.log(incidents.features);
+  mapview.whenLayerView(incByCrossing).then(function (layerView) {
+    var allIncidents, allCrossings;
+    // watchUtils.whenFalseOnce(layerView, 'updating', (value) => {
+    //   if (!value) {
+    incidents.queryFeatures().then((results) => {
+      allIncidents = results.features;
+      crossings.queryFeatures().then((results) => {
+        allCrossings = results.features;
+        const incByGxArr = countIncByGx(allCrossings, allIncidents);
 
-    addFeatures();
+        //**For viewing of indiv combo arr xings:
+        // for (let i = 0; i < incByGxArr.length; i++) {
+        //   if (incByGxArr[i].gxid === '295086B') {
+        //     console.log(incByGxArr[i]);
+        //   }
+        // }
+        //console.log(incByGxArr.slice(16165, 16175));
+        //RUN countIncByGx FUNC HERE; move addFeatures so can access 2 arrays
+        //restore rest of orig functionality
 
-    function addFeatures() {
-      //generate gx/incident object here
-      const data = [
-        {
-          ObjectID: 1,
-          gxid: '8976',
-          incidentTot: 0,
-          Lat: 41.4,
-          Long: -88.1,
-        },
-        {
-          ObjectID: 2,
-          gxid: '52398',
-          incidentTot: 0,
-          Lat: 41.68,
-          Long: -87.95,
-        },
-      ];
+        addFeatures(incByGxArr);
 
-      // create an array of graphics based on the data above
-      var graphics = [];
-      var graphic;
-      for (var i = 0; i < data.length; i++) {
-        graphic = new Graphic({
-          geometry: {
-            type: 'point',
-            latitude: data[i].Lat,
-            longitude: data[i].Long,
-          },
-          attributes: data[i],
-        });
-        graphics.push(graphic);
-      }
+        function addFeatures(data) {
+          //generate gx/incident object here
+          // const data = [
+          //   {
+          //     ObjectID: 1,
+          //     gxid: '8976',
+          //     incidentTot: 0,
+          //     Lat: 41.4,
+          //     Long: -88.1,
+          //   },
+          //   {
+          //     ObjectID: 2,
+          //     gxid: '52398',
+          //     incidentTot: 0,
+          //     Lat: 41.68,
+          //     Long: -87.95,
+          //   },
+          // ];
 
-      // addEdits object tells applyEdits that you want to add the features
-      const addEdits = {
-        addFeatures: graphics,
-      };
-
-      // apply the edits to the layer
-      applyEditsToLayer(addEdits);
-    }
-
-    function applyEditsToLayer(edits) {
-      newLayer
-        .applyEdits(edits)
-        .then(function (results) {
-          // if features were added - call queryFeatures to return
-          //    newly added graphics
-          if (results.addFeatureResults.length > 0) {
-            var objectIds = [];
-            results.addFeatureResults.forEach(function (item) {
-              objectIds.push(item.objectId);
+          // create an array of graphics based on the data above
+          var graphics = [];
+          var graphic;
+          for (var i = 0; i < data.length; i++) {
+            graphic = new Graphic({
+              geometry: {
+                type: 'point',
+                latitude: data[i].lat,
+                longitude: data[i].long,
+              },
+              attributes: data[i],
             });
-            // query the newly added features from the layer
-            newLayer.queryFeatures({
-              objectIds: objectIds,
-            });
-            // .then(function (results) {
-            //   console.log(
-            //     results.features.length,
-            //     'features have been added.'
-            //   );
-            // });
+            graphics.push(graphic);
           }
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-    }
+
+          // addEdits object tells applyEdits that you want to add the features
+          const addEdits = {
+            addFeatures: graphics,
+          };
+
+          // apply the edits to the layer
+          applyEditsToLayer(addEdits);
+        }
+
+        function applyEditsToLayer(edits) {
+          incByCrossing
+            .applyEdits(edits)
+            .then(function (results) {
+              // if features were added - call queryFeatures to return
+              //    newly added graphics
+              if (results.addFeatureResults.length > 0) {
+                var objectIds = [];
+                results.addFeatureResults.forEach(function (item) {
+                  objectIds.push(item.objectId);
+                });
+                // query the newly added features from the layer
+                incByCrossing.queryFeatures({
+                  objectIds: objectIds,
+                });
+                // .then(function (results) {
+                //   console.log(
+                //     results.features.length,
+                //     'features have been added.'
+                //   );
+                // });
+              }
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
+        //END
+      });
+    });
+    //   }
+    // });
   });
 });

@@ -35,14 +35,16 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
   const gxTally = [];
 
   for (let i = 0; i < crossingsArr.length; i++) {
-    const p = crossingsArr[i].properties;
+    const p = crossingsArr[i].attributes;
     gxTally.push({
       ObjectID: p.OBJECTID,
       gxid: p.CrossingID,
       streetName1: p.Street,
       streetName2: '',
       station1: p.Station,
-      station2: '',
+      station2: [],
+      city1: p.City,
+      city2: '',
       incidentTot: 0,
       injuryTot: 0,
       fatalityTot: 0,
@@ -54,10 +56,12 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
   //if there's 1+ incidents at a crossing, add info from incidents file
   for (let j = 0; j < gxTally.length; j++) {
     for (let k = 0; k < incidentsArr.length; k++) {
-      const q = incidentsArr[k].properties;
+      const q = incidentsArr[k].attributes;
       if (gxTally[j].gxid === q.GXID) {
+        //note: these 3 properties in gxTally being overwritten with properties from each incident; tho being used as a check of properties in crossing file
         gxTally[j].streetName2 = q.HIGHWAY;
-        gxTally[j].station2 = q.STATION;
+        gxTally[j].station2.push(q.STATION);
+        gxTally[j].city2 = q.CITY;
         gxTally[j].incidentTot += 1;
         gxTally[j].injuryTot += q.TOTINJ;
         gxTally[j].fatalityTot += q.TOTKLD;
