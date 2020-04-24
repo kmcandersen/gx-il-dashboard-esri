@@ -1,4 +1,3 @@
-//511 incidents, 448 unique crossings
 import { countIncByGx, createGXingItem } from './gx_summary_funcs.js';
 
 import { createIncItem } from './list_selected_gx.js';
@@ -22,15 +21,9 @@ require([
   Home,
   Search
 ) {
-  // const blob = new Blob([JSON.stringify('./data/gx_incidents.geojson')], {
-  //   type: 'application/json',
-  // });
-  // const url = URL.createObjectURL(blob);
-  // const incidents = new GeoJSONLayer({ url });
-
   //note: not visible; used as input to countIncByGx func
   let incidents = new GeoJSONLayer({
-    title: 'IL Grade Crossing Incidents 2015-2019',
+    title: 'incidents',
     copyright: 'Federal Railroad Administration',
     url: './data/gx_incidents.geojson',
     outFields: [
@@ -53,7 +46,7 @@ require([
   });
 
   let crossings = new GeoJSONLayer({
-    title: 'IL Grade Crossings',
+    title: 'crossings',
     copyright: 'Federal Railroad Administration',
     url: './data/il_crossings.geojson',
     outFields: [
@@ -98,7 +91,7 @@ require([
       type: 'simple',
       symbol: {
         type: 'simple-marker',
-        color: '#555555',
+        color: '#666666',
         size: '5px',
         outline: null,
       },
@@ -121,7 +114,9 @@ require([
   // create empty FeatureLayer
   const incByCrossingLayer = new FeatureLayer({
     // create an instance of esri/layers/support/Field for each field object
-    title: 'Crossings with Incidents',
+    title: 'incByCrossingLayer',
+    //used to troubleshoot hitTest highlight - which layer(s) were being captured:
+    outFields: ['ObjectID', 'gxid', 'streetName1'],
     fields: [
       {
         name: 'ObjectID',
@@ -225,7 +220,10 @@ require([
     position: 'top-right',
   });
 
-  mapview.whenLayerView(incByCrossingLayer).then(function (layerView) {
+  //Apply Edits func (to populate feature layer) works wo this:
+  //mapview.whenLayerView(incByCrossingLayer).then(function (layerView) {
+  //layerViewCrossings needed for hitTest highlight:
+  mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
     //https://community.esri.com/message/776908-search-widgetin-onfocusout-in-47-causes-error-when-used-with-jquery
     document.querySelector('.esri-search__input').onfocusout = null;
 
@@ -251,25 +249,102 @@ require([
 
         addFeatures(incByGxArr);
 
+        //on load, populate the List of crossings with incidents
         const gxListItem = createGXingItem(incByGxArr);
-        //add priority xings to dom
+        //add xings with inc to dom
         document
           .getElementById('list-panel')
           .insertAdjacentHTML('beforeend', gxListItem);
 
+        //selection via map click:
+        mapview.on('click', (event) => {
+          if (highlight) {
+            highlight.remove();
+          }
+
+          mapview.hitTest(event).then((response) => {
+            //If an orange pt is clicked: 0: incByCrossingLayer; 1: crossings. Should return pt from crossing layer only
+            //return feature var, only if a feature (not empty area) is clicked
+            if (response.results.length) {
+              var feature = response.results.filter((result) => {
+                return result.graphic.layer === crossings;
+              })[0].graphic;
+
+              // Highlight feature
+              highlight = layerViewCrossings.highlight(feature);
+
+              mapview
+                .goTo({
+                  center: [
+                    feature.attributes.Longitude,
+                    feature.attributes.Latitude,
+                  ],
+                  scale: 24414,
+                  //zoom: 16,
+                })
+                .catch(function (error) {
+                  if (error.name != 'AbortError') {
+                    console.error(error);
+                  }
+                });
+
+              //diff than crossing ID in Search:
+              const selGxId = feature.attributes.CrossingID;
+
+              const incListItem = createIncItem(
+                selGxId,
+                incByGxArr,
+                allIncidents
+              );
+
+              //add incidents at selected crossing to DOM
+              const listContent = document.getElementById('list-content');
+              listContent.remove();
+              document
+                .getElementById('list-panel')
+                .insertAdjacentHTML('beforeend', incListItem);
+              //
+            }
+
+            document
+              .getElementById('show-all')
+              .addEventListener('click', () => {
+                highlight.remove();
+
+                mapview
+                  .goTo({
+                    center: [-88.98, 40.0],
+                    scale: 4750000,
+                  })
+                  .catch((error) => {
+                    if (error.name != 'AbortError') {
+                      console.error(error);
+                    }
+                  });
+
+                //remove existing List; populate the List of crossings with incidents
+                const listContent = document.getElementById('list-content');
+                if (listContent) {
+                  listContent.remove();
+                }
+                const gxListItem = createGXingItem(incByGxArr);
+                document
+                  .getElementById('list-panel')
+                  .insertAdjacentHTML('beforeend', gxListItem);
+              });
+            //old end of results.length
+          });
+        });
+
+        //selection via Search:
         searchWidget.on('select-result', function (event) {
           mapview.goTo({
             scale: 24414,
           });
+
+          //on Search, populate the List of incidents at the selected crossing
           const selGxId = event.result.feature.attributes.CrossingID;
           const incListItem = createIncItem(selGxId, incByGxArr, allIncidents);
-
-          //NEED to grab searchWidget result graphic, so can remove highlight when show-all button is clicked
-          //console.log('search result', searchWidget.resultGraphic);
-
-          // old Highlight feature code:
-          //highlight = layerView.highlight(searchWidget.resultGraphic);
-
           //add incidents at selected crossing to DOM
           const listContent = document.getElementById('list-content');
           listContent.remove();
@@ -277,12 +352,19 @@ require([
             .getElementById('list-panel')
             .insertAdjacentHTML('beforeend', incListItem);
 
+          //"Clear Selection" button
           document.getElementById('show-all').addEventListener('click', () => {
-            // doesn't work
-            if (highlight) {
-              highlight.remove();
-            }
+            //remove existing List; populate the List of crossings with incidents
+            const listContent = document.getElementById('list-content');
+            listContent.remove();
+            const gxListItem = createGXingItem(incByGxArr);
+            document
+              .getElementById('list-panel')
+              .insertAdjacentHTML('beforeend', gxListItem);
 
+            //clear search box contents & remove highlighted feature
+            searchWidget.clear();
+            //zoom to initial extent
             mapview
               .goTo({
                 center: [-88.98, 40.0],
@@ -367,10 +449,10 @@ require([
               console.log(error);
             });
         }
-        //END
       });
     });
-    //   }
-    // });
+    //END of whenLayerView - crossings
   });
+  //END of whenLayerView - gxWithInc
+  //});
 });

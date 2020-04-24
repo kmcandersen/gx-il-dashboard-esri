@@ -72,14 +72,20 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
 
 export const createGXingItem = (gxSummArr) => {
   //set up Priority List header
-  let htmlString = `<div id="list-content"><div id="list-header"><h4>Top ${gxSummArr.length} Grade Crossings</h4></div><div id="list-items">`;
 
+  let gxWithIncCount = 0;
+  let htmlString = '';
+  let htmlStringHeader = '';
+  let htmlStringGx = '';
+
+  //for each crossing with 1+ incident, add an item in htmlStringGx
   for (let i = 0; i < gxSummArr.length; i++) {
     let { gxid, streetName1, incidentTot, injuryTot, fatalityTot } = gxSummArr[
       i
     ];
     if (incidentTot > 0) {
-      htmlString += `<div className="content">                 
+      gxWithIncCount += 1;
+      htmlStringGx += `<div className="content">                 
         <div className="header text-bg-gray"><h5>No. ${gxid}</h5></div>
         <div className="list-body">
             <div className="description top-margin-item"><strong>Street name:</strong>  ${streetName1}</div>
@@ -90,6 +96,9 @@ export const createGXingItem = (gxSummArr) => {
     </div>`;
     }
   }
+  htmlStringHeader = `<div id="list-content"><div id="list-header"><h4>${gxWithIncCount} Grade Crossings with Collisions</h4></div><div id="list-items">`;
+  htmlString += htmlStringHeader;
+  htmlString += htmlStringGx;
   htmlString += `</div></div>`;
   return htmlString;
 };
