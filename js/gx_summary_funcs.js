@@ -1,9 +1,7 @@
-//run countIncByGx to create gx summary arr of objs, incl lat/long AND GX WITH NO INCIDENTS
-
-//countIncByGx(il_crossings.features)
+//run countIncByGx to create a new array, with an object for each crossing in IL, and a summary of characteristics and incidents (if applicable) at the crossing. This array is the data source for the incByCrossingLayer feature layer in main.js, and a definitionExpression limits visible points to the crossings with incidents.
 
 // GOAL:
-// const data = [
+// const result = [
 //   {
 //     ObjectID: 1,
 //     gxid: '8976',
@@ -72,8 +70,26 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
   return gxTally;
 };
 
-// export const runCountIncByGx = () => {
-//   const incidents = './gx_incidents.geojson';
-//   const parsedIncidents = JSON.parse(incidents);
-//   console.log(parsedIncidents.features);
-// };
+export const createGXingItem = (gxSummArr) => {
+  //set up Priority List header
+  let htmlString = `<div id="list-content"><div id="list-header"><h4>Top ${gxSummArr.length} Grade Crossings</h4></div><div id="list-items">`;
+
+  for (let i = 0; i < gxSummArr.length; i++) {
+    let { gxid, streetName1, incidentTot, injuryTot, fatalityTot } = gxSummArr[
+      i
+    ];
+    if (incidentTot > 0) {
+      htmlString += `<div className="content">                 
+        <div className="header text-bg-gray"><h5>No. ${gxid}</h5></div>
+        <div className="list-body">
+            <div className="description top-margin-item"><strong>Street name:</strong>  ${streetName1}</div>
+            <div className="description top-margin-item"><strong>Total collisions:</strong> ${incidentTot}</div>
+            <div className="description"><strong>Injuries:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</div>
+        </div>
+    <div className="ui divider"></div>
+    </div>`;
+    }
+  }
+  htmlString += `</div></div>`;
+  return htmlString;
+};

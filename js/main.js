@@ -1,5 +1,7 @@
 //511 incidents, 448 unique crossings
-import { countIncByGx } from './list_all_xings.js';
+import { countIncByGx, createGXingItem } from './gx_summary_funcs.js';
+
+import { createIncItem } from './list_selected_gx.js';
 
 require([
   'esri/Map',
@@ -26,7 +28,10 @@ require([
   // const url = URL.createObjectURL(blob);
   // const incidents = new GeoJSONLayer({ url });
 
+  //note: not visible; used as input to countIncByGx func
   let incidents = new GeoJSONLayer({
+    title: 'IL Grade Crossing Incidents 2015-2019',
+    copyright: 'Federal Railroad Administration',
     url: './data/gx_incidents.geojson',
     outFields: [
       'GXID',
@@ -44,12 +49,12 @@ require([
       'TYPVEH',
       'TYPEQ',
     ],
-    copyright: 'Federal Railroad Administration',
-    title: 'IL Grade Crossing Incidents',
     visible: false,
   });
 
   let crossings = new GeoJSONLayer({
+    title: 'IL Grade Crossings',
+    copyright: 'Federal Railroad Administration',
     url: './data/il_crossings.geojson',
     outFields: [
       'OBJECTID',
@@ -59,9 +64,7 @@ require([
       'Latitude',
       'Longitude',
     ],
-    copyright: 'Federal Railroad Administration',
-    title: 'IL Grade Crossings',
-    visible: false,
+    // visible: false,
     ////To fix Error - layer excluded bc type couldn't be determined:
     fields: [
       {
@@ -91,11 +94,20 @@ require([
       },
     ],
     objectIdField: 'OBJECTID',
+    renderer: {
+      type: 'simple',
+      symbol: {
+        type: 'simple-marker',
+        color: '#555555',
+        size: '5px',
+        outline: null,
+      },
+    },
   });
 
   let map = new Map({
     basemap: 'dark-gray',
-    layers: [incidents],
+    layers: [crossings],
   });
 
   let mapview = new MapView({
@@ -107,9 +119,9 @@ require([
   });
 
   // create empty FeatureLayer
-  const incByCrossing = new FeatureLayer({
+  const incByCrossingLayer = new FeatureLayer({
     // create an instance of esri/layers/support/Field for each field object
-    title: 'Grade Crossings',
+    title: 'Crossings with Incidents',
     fields: [
       {
         name: 'ObjectID',
@@ -120,7 +132,39 @@ require([
         type: 'string',
       },
       {
+        name: 'streetName1',
+        type: 'string',
+      },
+      {
+        name: 'streetName2',
+        type: 'string',
+      },
+      {
+        name: 'station1',
+        type: 'string',
+      },
+      {
+        name: 'station2',
+        type: 'string',
+      },
+      {
+        name: 'city1',
+        type: 'string',
+      },
+      {
+        name: 'city2',
+        type: 'string',
+      },
+      {
         name: 'incidentTot',
+        type: 'integer',
+      },
+      {
+        name: 'injuryTot',
+        type: 'integer',
+      },
+      {
+        name: 'fatalityTot',
         type: 'integer',
       },
       {
@@ -141,17 +185,55 @@ require([
       symbol: {
         type: 'simple-marker',
         color: 'orange',
-        size: '7px',
+        size: '6px',
         outline: null,
       },
     },
+    definitionExpression: 'incidentTot > 0',
   });
-  map.add(incByCrossing);
 
-  mapview.whenLayerView(incByCrossing).then(function (layerView) {
-    var allIncidents, allCrossings;
+  var homeBtn = new Home({
+    view: mapview,
+  });
+
+  var searchWidget = new Search({
+    view: mapview,
+
+    includeDefaultSources: false,
+    locationEnabled: false,
+    resultGraphicEnabled: true,
+    sources: [
+      {
+        layer: crossings,
+        searchFields: ['CrossingID', 'Street'],
+        suggestionTemplate: '{CrossingID} {Street}, In/Near: {Station}',
+        displayField: 'Street',
+        exactMatch: false,
+        outFields: ['CrossingID', 'Street'],
+        name: 'Crossing ID or Street Name',
+        placeholder: 'Search Crossing ID or Street',
+        zoom: 12,
+      },
+    ],
+  });
+
+  map.add(incByCrossingLayer);
+  // Adds home button
+  mapview.ui.add(homeBtn, 'top-left');
+
+  mapview.ui.add(searchWidget, {
+    position: 'top-right',
+  });
+
+  mapview.whenLayerView(incByCrossingLayer).then(function (layerView) {
+    //https://community.esri.com/message/776908-search-widgetin-onfocusout-in-47-causes-error-when-used-with-jquery
+    document.querySelector('.esri-search__input').onfocusout = null;
+
+    var allIncidents, allCrossings, highlight;
+
     // watchUtils.whenFalseOnce(layerView, 'updating', (value) => {
     //   if (!value) {
+
     incidents.queryFeatures().then((results) => {
       allIncidents = results.features;
       crossings.queryFeatures().then((results) => {
@@ -165,14 +247,58 @@ require([
         //   }
         // }
         //console.log(incByGxArr.slice(16165, 16175));
-        //RUN countIncByGx FUNC HERE; move addFeatures so can access 2 arrays
         //restore rest of orig functionality
 
         addFeatures(incByGxArr);
 
-        function addFeatures(data) {
+        const gxListItem = createGXingItem(incByGxArr);
+        //add priority xings to dom
+        document
+          .getElementById('list-panel')
+          .insertAdjacentHTML('beforeend', gxListItem);
+
+        searchWidget.on('select-result', function (event) {
+          mapview.goTo({
+            scale: 24414,
+          });
+          const selGxId = event.result.feature.attributes.CrossingID;
+          const incListItem = createIncItem(selGxId, incByGxArr, allIncidents);
+
+          //NEED to grab searchWidget result graphic, so can remove highlight when show-all button is clicked
+          //console.log('search result', searchWidget.resultGraphic);
+
+          // old Highlight feature code:
+          //highlight = layerView.highlight(searchWidget.resultGraphic);
+
+          //add incidents at selected crossing to DOM
+          const listContent = document.getElementById('list-content');
+          listContent.remove();
+          document
+            .getElementById('list-panel')
+            .insertAdjacentHTML('beforeend', incListItem);
+
+          document.getElementById('show-all').addEventListener('click', () => {
+            // doesn't work
+            if (highlight) {
+              highlight.remove();
+            }
+
+            mapview
+              .goTo({
+                center: [-88.98, 40.0],
+                scale: 4750000,
+              })
+              .catch((error) => {
+                if (error.name != 'AbortError') {
+                  console.error(error);
+                }
+              });
+          });
+        });
+
+        function addFeatures(arr) {
           //generate gx/incident object here
-          // const data = [
+          // const arr = [
           //   {
           //     ObjectID: 1,
           //     gxid: '8976',
@@ -192,14 +318,14 @@ require([
           // create an array of graphics based on the data above
           var graphics = [];
           var graphic;
-          for (var i = 0; i < data.length; i++) {
+          for (var i = 0; i < arr.length; i++) {
             graphic = new Graphic({
               geometry: {
                 type: 'point',
-                latitude: data[i].lat,
-                longitude: data[i].long,
+                latitude: arr[i].lat,
+                longitude: arr[i].long,
               },
-              attributes: data[i],
+              attributes: arr[i],
             });
             graphics.push(graphic);
           }
@@ -214,7 +340,7 @@ require([
         }
 
         function applyEditsToLayer(edits) {
-          incByCrossing
+          incByCrossingLayer
             .applyEdits(edits)
             .then(function (results) {
               // if features were added - call queryFeatures to return
@@ -225,9 +351,10 @@ require([
                   objectIds.push(item.objectId);
                 });
                 // query the newly added features from the layer
-                incByCrossing.queryFeatures({
+                incByCrossingLayer.queryFeatures({
                   objectIds: objectIds,
                 });
+
                 // .then(function (results) {
                 //   console.log(
                 //     results.features.length,
