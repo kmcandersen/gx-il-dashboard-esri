@@ -258,8 +258,13 @@ require([
 
         //selection via map click:
         mapview.on('click', (event) => {
+          //if don't click on a point, remove highlights from a prev click or search
           if (highlight) {
             highlight.remove();
+          }
+          if (searchWidget.resultGraphic) {
+            console.log('TRUE');
+            searchWidget.clear();
           }
 
           mapview.hitTest(event).then((response) => {
@@ -341,7 +346,7 @@ require([
           mapview.goTo({
             scale: 24414,
           });
-
+          // console.log('event.result', event.result);
           //on Search, populate the List of incidents at the selected crossing
           const selGxId = event.result.feature.attributes.CrossingID;
           const incListItem = createIncItem(selGxId, incByGxArr, allIncidents);
