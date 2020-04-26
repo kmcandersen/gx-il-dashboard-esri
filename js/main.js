@@ -224,7 +224,6 @@ require([
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerView) {
   //layerViewCrossings needed for hitTest highlight:
   mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
-    //https://community.esri.com/message/776908-search-widgetin-onfocusout-in-47-causes-error-when-used-with-jquery
     document.querySelector('.esri-search__input').onfocusout = null;
 
     var allIncidents, allCrossings, highlight;
@@ -237,15 +236,6 @@ require([
       crossings.queryFeatures().then((results) => {
         allCrossings = results.features;
         const incByGxArr = countIncByGx(allCrossings, allIncidents);
-
-        //**For viewing of indiv combo arr xings:
-        // for (let i = 0; i < incByGxArr.length; i++) {
-        //   if (incByGxArr[i].gxid === '295086B') {
-        //     console.log(incByGxArr[i]);
-        //   }
-        // }
-        //console.log(incByGxArr.slice(16165, 16175));
-        //restore rest of orig functionality
 
         addFeatures(incByGxArr);
 
@@ -263,7 +253,6 @@ require([
             highlight.remove();
           }
           if (searchWidget.resultGraphic) {
-            console.log('TRUE');
             searchWidget.clear();
           }
 
@@ -295,49 +284,8 @@ require([
 
               //diff than crossing ID in Search:
               const selGxId = feature.attributes.CrossingID;
-
-              const incListItem = createIncItem(
-                selGxId,
-                incByGxArr,
-                allIncidents
-              );
-
-              //add incidents at selected crossing to DOM
-              const listContent = document.getElementById('list-content');
-              listContent.remove();
-              document
-                .getElementById('list-panel')
-                .insertAdjacentHTML('beforeend', incListItem);
-              //
+              fillIncidentList(selGxId);
             }
-
-            document
-              .getElementById('show-all')
-              .addEventListener('click', () => {
-                highlight.remove();
-
-                mapview
-                  .goTo({
-                    center: [-88.98, 40.0],
-                    scale: 4750000,
-                  })
-                  .catch((error) => {
-                    if (error.name != 'AbortError') {
-                      console.error(error);
-                    }
-                  });
-
-                //remove existing List; populate the List of crossings with incidents
-                const listContent = document.getElementById('list-content');
-                if (listContent) {
-                  listContent.remove();
-                }
-                const gxListItem = createGXingItem(incByGxArr);
-                document
-                  .getElementById('list-panel')
-                  .insertAdjacentHTML('beforeend', gxListItem);
-              });
-            //old end of results.length
           });
         });
 
@@ -346,62 +294,13 @@ require([
           mapview.goTo({
             scale: 24414,
           });
-          // console.log('event.result', event.result);
-          //on Search, populate the List of incidents at the selected crossing
+
           const selGxId = event.result.feature.attributes.CrossingID;
-          const incListItem = createIncItem(selGxId, incByGxArr, allIncidents);
-          //add incidents at selected crossing to DOM
-          const listContent = document.getElementById('list-content');
-          listContent.remove();
-          document
-            .getElementById('list-panel')
-            .insertAdjacentHTML('beforeend', incListItem);
 
-          //"Clear Selection" button
-          document.getElementById('show-all').addEventListener('click', () => {
-            //remove existing List; populate the List of crossings with incidents
-            const listContent = document.getElementById('list-content');
-            listContent.remove();
-            const gxListItem = createGXingItem(incByGxArr);
-            document
-              .getElementById('list-panel')
-              .insertAdjacentHTML('beforeend', gxListItem);
-
-            //clear search box contents & remove highlighted feature
-            searchWidget.clear();
-            //zoom to initial extent
-            mapview
-              .goTo({
-                center: [-88.98, 40.0],
-                scale: 4750000,
-              })
-              .catch((error) => {
-                if (error.name != 'AbortError') {
-                  console.error(error);
-                }
-              });
-          });
+          fillIncidentList(selGxId);
         });
 
         function addFeatures(arr) {
-          //generate gx/incident object here
-          // const arr = [
-          //   {
-          //     ObjectID: 1,
-          //     gxid: '8976',
-          //     incidentTot: 0,
-          //     Lat: 41.4,
-          //     Long: -88.1,
-          //   },
-          //   {
-          //     ObjectID: 2,
-          //     gxid: '52398',
-          //     incidentTot: 0,
-          //     Lat: 41.68,
-          //     Long: -87.95,
-          //   },
-          // ];
-
           // create an array of graphics based on the data above
           var graphics = [];
           var graphic;
@@ -441,23 +340,60 @@ require([
                 incByCrossingLayer.queryFeatures({
                   objectIds: objectIds,
                 });
-
-                // .then(function (results) {
-                //   console.log(
-                //     results.features.length,
-                //     'features have been added.'
-                //   );
-                // });
               }
             })
             .catch(function (error) {
               console.log(error);
             });
         }
+
+        const clearBtnHandler = () => {
+          if (highlight) {
+            highlight.remove();
+          }
+          if (searchWidget.resultGraphic) {
+            searchWidget.clear();
+          }
+
+          mapview
+            .goTo({
+              center: [-88.98, 40.0],
+              scale: 4750000,
+            })
+            .catch((error) => {
+              if (error.name != 'AbortError') {
+                console.error(error);
+              }
+            });
+
+          //remove existing List; populate the List of crossings with incidents
+          const listContent = document.getElementById('list-content');
+          if (listContent) {
+            listContent.remove();
+          }
+          const gxListItem = createGXingItem(incByGxArr);
+          document
+            .getElementById('list-panel')
+            .insertAdjacentHTML('beforeend', gxListItem);
+        };
+
+        const fillIncidentList = (selGxId) => {
+          const incListItem = createIncItem(selGxId, incByGxArr, allIncidents);
+
+          //add incidents at selected crossing to DOM
+          const listContent = document.getElementById('list-content');
+          listContent.remove();
+          document
+            .getElementById('list-panel')
+            .insertAdjacentHTML('beforeend', incListItem);
+          document
+            .getElementById('show-all')
+            .addEventListener('click', () => clearBtnHandler());
+        };
       });
+      //END of whenLayerView - crossings
     });
-    //END of whenLayerView - crossings
+    //END of whenLayerView - gxWithInc
+    //});
   });
-  //END of whenLayerView - gxWithInc
-  //});
 });
