@@ -58,7 +58,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
       if (gxTally[j].gxid === q.GXID) {
         //note: these 3 properties in gxTally being overwritten with properties from each incident; tho being used as a check of properties in crossing file
         gxTally[j].streetName2 = q.HIGHWAY;
-        gxTally[j].station2.push(q.STATION);
+        gxTally[j].station2 = q.STATION;
         gxTally[j].city2 = q.CITY;
         gxTally[j].incidentTot += 1;
         gxTally[j].injuryTot += q.TOTINJ;
@@ -72,34 +72,44 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
 
 export const createGXingItem = (gxSummArr) => {
   //set up Priority List header
-
   let gxWithIncCount = 0;
+  let incidentAll = 0;
+  let fatalityAll = 0;
+  let injuryAll = 0;
   let htmlString = '';
   let htmlStringHeader = '';
   let htmlStringGx = '';
 
   //for each crossing with 1+ incident, add an item in htmlStringGx
+  //re. "station" var: prefer to use 'station1' from crossings file, bc that is what's used in Search widget, but if that's null, use 'station2' from incidents file.
   for (let i = 0; i < gxSummArr.length; i++) {
     let { gxid, streetName1, incidentTot, injuryTot, fatalityTot } = gxSummArr[
       i
     ];
     if (incidentTot > 0) {
       gxWithIncCount += 1;
+      incidentAll += incidentTot;
+      injuryAll += injuryTot;
+      fatalityAll += fatalityTot;
+      let station =
+        gxSummArr[i].station1 === null
+          ? gxSummArr[i].station2
+          : gxSummArr[i].station1;
       htmlStringGx += `<div class="list-item" style="background-color: #fff;">                 
         <div><h3 class="item-header">No. ${gxid}</h3></div>
         <div class="list-detail">
             <p><strong>Street name:</strong>  ${streetName1}</p>
-            <p><strong>Total collisions:</strong> ${incidentTot}</p>
-            <p><strong>Injuries:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</p>
+            <p><strong>In/near:</strong>  ${station}</p>
+            <p><strong>Total collisions:</strong> ${incidentTot} &nbsp;| &nbsp; <strong>Injured:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</p>
         </div>
     </div>`;
     }
   }
   htmlStringHeader = `<div id="list-content">
     <div id="list-header">
-      <h2 id="list-headline">Grade Crossings with Collisions</h2>
-      <p style="margin-bottom: 0;">${gxWithIncCount} crossings &nbsp;| &nbsp; XX crossings in IL</p>
-      <p style="margin-top: 5px;">Totals: XX collisions &nbsp;| &nbsp; XX injured &nbsp;| &nbsp; XX fatalities</p>
+      <h2 id="list-headline"><span class="collision-sym">●</span> Grade Crossings with Collisions</h2>
+      <p style="margin-bottom: 0;">${gxWithIncCount} crossings of ${gxSummArr.length.toLocaleString()} crossings in IL</p>
+      <p style="margin-top: 5px;">${incidentAll} collisions &nbsp;| &nbsp; ${injuryAll} injured &nbsp;| &nbsp; ${fatalityAll} fatalities</p>
     </div>
     <div id="list-body">`;
   htmlString += htmlStringHeader;

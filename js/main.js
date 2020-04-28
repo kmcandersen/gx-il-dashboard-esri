@@ -107,7 +107,7 @@ require([
     container: 'mapview',
     // padding: { top: 55 },
     map: map,
-    center: [-88.98, 40.0],
+    center: [-89.5, 39.75],
     //zoom: 6,
     scale: 4750000,
   });
@@ -194,7 +194,7 @@ require([
 
   var searchWidget = new Search({
     view: mapview,
-
+    container: 'search-container',
     includeDefaultSources: false,
     locationEnabled: false,
     resultGraphicEnabled: true,
@@ -217,9 +217,9 @@ require([
   // Adds home button
   mapview.ui.add(homeBtn, 'top-left');
 
-  mapview.ui.add(searchWidget, {
-    position: 'top-right',
-  });
+  // mapview.ui.add(searchWidget, {
+  //   position: 'top-right',
+  // });
 
   //Apply Edits func (to populate feature layer) works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerView) {
@@ -228,7 +228,6 @@ require([
     document.querySelector('.esri-search__input').onfocusout = null;
 
     var allIncidents, allCrossings, highlight;
-
     // watchUtils.whenFalseOnce(layerView, 'updating', (value) => {
     //   if (!value) {
 
@@ -358,7 +357,7 @@ require([
 
           mapview
             .goTo({
-              center: [-88.98, 40.0],
+              center: [-89.5, 39.75],
               scale: 4750000,
             })
             .catch((error) => {
