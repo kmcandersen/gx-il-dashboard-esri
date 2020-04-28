@@ -85,23 +85,18 @@ export const createGXingItem = (gxSummArr) => {
     ];
     if (incidentTot > 0) {
       gxWithIncCount += 1;
-      htmlStringGx += `<div class="list-item" style="background-color: #fff;">                 
-        <div><h3 class="item-header">No. ${gxid}</h3></div>
-        <div class="list-detail">
-            <p><strong>Street name:</strong>  ${streetName1}</p>
-            <p><strong>Total collisions:</strong> ${incidentTot}</p>
-            <p><strong>Injuries:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</p>
+      htmlStringGx += `<div className="content">                 
+        <div className="header text-bg-gray"><h5>No. ${gxid}</h5></div>
+        <div className="list-body">
+            <div className="description top-margin-item"><strong>Street name:</strong>  ${streetName1}</div>
+            <div className="description top-margin-item"><strong>Total collisions:</strong> ${incidentTot}</div>
+            <div className="description"><strong>Injuries:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</div>
         </div>
+    <div className="ui divider"></div>
     </div>`;
     }
   }
-  htmlStringHeader = `<div id="list-content">
-    <div id="list-header">
-      <h2 id="list-headline">Grade Crossings with Collisions</h2>
-      <p style="margin-bottom: 0;">${gxWithIncCount} crossings &nbsp;| &nbsp; XX crossings in IL</p>
-      <p style="margin-top: 5px;">Totals: XX collisions &nbsp;| &nbsp; XX injured &nbsp;| &nbsp; XX fatalities</p>
-    </div>
-    <div id="list-body">`;
+  htmlStringHeader = `<div id="list-content"><div id="list-header"><h4>${gxWithIncCount} Grade Crossings with Collisions</h4></div><div id="list-items">`;
   htmlString += htmlStringHeader;
   htmlString += htmlStringGx;
   htmlString += `</div></div>`;

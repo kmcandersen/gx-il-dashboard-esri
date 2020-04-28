@@ -99,12 +99,13 @@ require([
   });
 
   let map = new Map({
-    basemap: 'dark-gray',
+    basemap: 'gray-vector',
     layers: [crossings],
   });
 
   let mapview = new MapView({
     container: 'mapview',
+    // padding: { top: 55 },
     map: map,
     center: [-88.98, 40.0],
     //zoom: 6,
