@@ -45,6 +45,29 @@ require([
     visible: false,
   });
 
+  let smallGxPoints = {
+    type: 'simple',
+    symbol: {
+      type: 'simple-marker',
+      color: '#ccc',
+      outline: null,
+      size: 4,
+    },
+  };
+
+  let largeGxPoints = {
+    type: 'simple',
+    symbol: {
+      type: 'simple-marker',
+      color: '#ccc',
+      outline: {
+        color: '#959595',
+        width: 0.5,
+      },
+      size: 8,
+    },
+  };
+
   let crossings = new GeoJSONLayer({
     title: 'crossings',
     copyright: 'FRA',
@@ -87,15 +110,7 @@ require([
       },
     ],
     objectIdField: 'OBJECTID',
-    renderer: {
-      type: 'simple',
-      symbol: {
-        type: 'simple-marker',
-        color: '#666666',
-        size: '5px',
-        outline: null,
-      },
-    },
+    renderer: smallGxPoints,
   });
 
   let map = new Map({
@@ -109,8 +124,35 @@ require([
     map: map,
     center: [-89.5, 39.75],
     //zoom: 6,
-    scale: 4750000,
+    scale: 3750000,
+    highlightOptions: {
+      fillOpacity: 0,
+      haloColor: '#de2900',
+    },
   });
+
+  let smallGxIncPoints = {
+    type: 'simple',
+    symbol: {
+      type: 'simple-marker',
+      color: 'orange',
+      outline: null,
+      size: 4,
+    },
+  };
+
+  let largeGxIncPoints = {
+    type: 'simple',
+    symbol: {
+      type: 'simple-marker',
+      color: 'orange',
+      outline: {
+        color: '#d17e21',
+        width: 0.5,
+      },
+      size: 8,
+    },
+  };
 
   // create empty FeatureLayer
   const incByCrossingLayer = new FeatureLayer({
@@ -176,15 +218,7 @@ require([
     geometryType: 'point',
     spatialReference: { wkid: 4326 },
     source: [], // adding an empty feature collection
-    renderer: {
-      type: 'simple',
-      symbol: {
-        type: 'simple-marker',
-        color: 'orange',
-        size: '6px',
-        outline: null,
-      },
-    },
+    renderer: smallGxIncPoints,
     definitionExpression: 'incidentTot > 0',
   });
 
@@ -221,7 +255,7 @@ require([
   //   position: 'top-right',
   // });
 
-  //Apply Edits func (to populate feature layer) works wo this:
+  //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
   mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
@@ -231,227 +265,238 @@ require([
     // watchUtils.whenFalseOnce(layerView, 'updating', (value) => {
     //   if (!value) {
 
-    incidents.queryFeatures().then((results) => {
+    mapview.watch('scale', function (newValue) {
+      crossings.renderer = newValue <= 187500 ? largeGxPoints : smallGxPoints;
+    });
+
+    mapview.watch('scale', function (newValue) {
+      incByCrossingLayer.renderer =
+        newValue <= 187500 ? largeGxIncPoints : smallGxIncPoints;
+    });
+
+    incidents.queryFeatures({ orderByFields: ['DATE ASC'] }).then((results) => {
       allIncidents = results.features;
-      crossings.queryFeatures().then((results) => {
-        allCrossings = results.features;
-        const incByGxArr = countIncByGx(allCrossings, allIncidents);
+      crossings
+        .queryFeatures({ orderByFields: ['CrossingID ASC'] })
+        .then((results) => {
+          allCrossings = results.features;
+          const incByGxArr = countIncByGx(allCrossings, allIncidents);
 
-        addFeatures(incByGxArr);
+          addFeatures(incByGxArr);
 
-        //on load, populate the List of crossings with incidents
-        const gxListPanel = createGXingItem(incByGxArr);
-        //add xings with inc to dom
-        document
-          .getElementById('list-panel')
-          .insertAdjacentHTML('beforeend', gxListPanel);
+          //on load, populate the List of crossings with incidents
+          const gxListPanel = createGXingItem(incByGxArr);
+          //add xings with inc to dom
+          document
+            .getElementById('list-panel')
+            .insertAdjacentHTML('beforeend', gxListPanel);
 
-        //Gx with Incidents List: on mouseover, shading on list & feature highlighted
-        const listItems = document.querySelectorAll('.list-item');
-        listItems.forEach((item) => {
-          item.addEventListener('mouseover', (event) => {
-            item.classList.add('list-item-highlight');
-            var query = crossings.createQuery();
-            var queryString = 'CrossingID = ' + "'" + item.dataset.gxid + "'";
-            query.where = queryString;
-            crossings.queryFeatures(query).then(function (result) {
-              if (highlight) {
-                highlight.remove();
-              }
-              highlight = layerViewCrossings.highlight(result.features);
+          //initial load: List event selectors
+          //Gx with Incidents List: on mouseover, shading on list & feature highlighted
+          const listItemEffects = () => {
+            const listItems = document.querySelectorAll('.list-item');
+            listItems.forEach((item) => {
+              item.addEventListener('mouseover', (event) => {
+                item.classList.add('list-item-highlight');
+                var query = crossings.createQuery();
+                var queryString =
+                  'CrossingID = ' + "'" + item.dataset.gxid + "'";
+                query.where = queryString;
+                crossings.queryFeatures(query).then(function (result) {
+                  if (highlight) {
+                    highlight.remove();
+                  }
+                  highlight = layerViewCrossings.highlight(result.features);
+                });
+              });
             });
-          });
-        });
-        listItems.forEach((item) => {
-          item.addEventListener('mouseout', (event) => {
-            item.classList.remove('list-item-highlight');
+            listItems.forEach((item) => {
+              item.addEventListener('mouseout', (event) => {
+                item.classList.remove('list-item-highlight');
+                if (highlight) {
+                  highlight.remove();
+                }
+              });
+            });
+          };
+
+          //Gx with Incidents List: click on Gxid No. > Zooms to Gx
+          const listItemHeaderEffects = () => {
+            const itemHeaders = document.querySelectorAll('.item-headline');
+            itemHeaders.forEach((itemHdr) => {
+              itemHdr.addEventListener('click', (event) => {
+                mapview
+                  .goTo({
+                    center: [
+                      Number(itemHdr.dataset.long),
+                      Number(itemHdr.dataset.lat),
+                    ],
+                    scale: 24414,
+                    //zoom: 16,
+                  })
+                  .catch(function (error) {
+                    if (error.name != 'AbortError') {
+                      console.error(error);
+                    }
+                  });
+              });
+            });
+          };
+          listItemEffects();
+          listItemHeaderEffects();
+
+          //selection via map click:
+          mapview.on('click', (event) => {
+            //if don't click on a point, remove highlights from a prev click or search
             if (highlight) {
               highlight.remove();
             }
-          });
-        });
+            if (searchWidget.resultGraphic) {
+              searchWidget.clear();
+            }
 
-        //Gx with Incidents List: click on Gxid No. > Zooms to Gx
-        const itemHeaders = document.querySelectorAll('.item-header');
-        itemHeaders.forEach((itemHdr) => {
-          itemHdr.addEventListener('click', (event) => {
-            mapview
-              .goTo({
-                center: [
-                  Number(itemHdr.dataset.long),
-                  Number(itemHdr.dataset.lat),
-                ],
-                scale: 24414,
-                //zoom: 16,
+            mapview.hitTest(event).then((response) => {
+              //If an orange pt is clicked: 0: incByCrossingLayer; 1: crossings. Should return pt from crossing layer only
+              //return feature var, only if a feature (not empty area) is clicked
+              //console.log('resp.results', response.results);
+              if (response.results.length) {
+                var feature = response.results.filter((result) => {
+                  return result.graphic.layer === crossings;
+                })[0].graphic;
+
+                // Highlight feature
+                highlight = layerViewCrossings.highlight(feature);
+
+                mapview
+                  .goTo({
+                    center: [
+                      feature.attributes.Longitude,
+                      feature.attributes.Latitude,
+                    ],
+                    scale: 24414,
+                    //zoom: 16,
+                  })
+                  .catch(function (error) {
+                    if (error.name != 'AbortError') {
+                      console.error(error);
+                    }
+                  });
+
+                //diff than crossing ID in Search:
+                const selGxId = feature.attributes.CrossingID;
+                fillIncidentList(selGxId);
+              }
+            });
+          });
+
+          //selection via Search:
+          searchWidget.on('select-result', function (event) {
+            mapview.goTo({
+              scale: 24414,
+            });
+
+            const selGxId = event.result.feature.attributes.CrossingID;
+
+            fillIncidentList(selGxId);
+          });
+
+          function addFeatures(arr) {
+            // create an array of graphics based on the data above
+            var graphics = [];
+            var graphic;
+            for (var i = 0; i < arr.length; i++) {
+              graphic = new Graphic({
+                geometry: {
+                  type: 'point',
+                  latitude: arr[i].lat,
+                  longitude: arr[i].long,
+                },
+                attributes: arr[i],
+              });
+              graphics.push(graphic);
+            }
+
+            // addEdits object tells applyEdits that you want to add the features
+            const addEdits = {
+              addFeatures: graphics,
+            };
+
+            // apply the edits to the layer
+            applyEditsToLayer(addEdits);
+          }
+
+          function applyEditsToLayer(edits) {
+            incByCrossingLayer
+              .applyEdits(edits)
+              .then(function (results) {
+                // if features were added - call queryFeatures to return
+                //    newly added graphics
+                if (results.addFeatureResults.length > 0) {
+                  var objectIds = [];
+                  results.addFeatureResults.forEach(function (item) {
+                    objectIds.push(item.objectId);
+                  });
+                  // query the newly added features from the layer
+                  incByCrossingLayer.queryFeatures({
+                    objectIds: objectIds,
+                  });
+                }
               })
               .catch(function (error) {
+                console.log(error);
+              });
+          }
+
+          const clearBtnHandler = () => {
+            if (highlight) {
+              highlight.remove();
+            }
+            if (searchWidget.resultGraphic) {
+              searchWidget.clear();
+            }
+
+            mapview
+              .goTo({
+                center: [-89.5, 39.75],
+                scale: 3750000,
+              })
+              .catch((error) => {
                 if (error.name != 'AbortError') {
                   console.error(error);
                 }
               });
-          });
-        });
-        // console.log('itemHeader', itemHeader[0].dataset.coords);
-        // const gxidHandler = (coords) => {
-        //   mapview
-        //     .goTo({
-        //       center: [coords],
-        //       scale: 24414,
-        //       //zoom: 16,
-        //     })
-        //     .catch(function (error) {
-        //       if (error.name != 'AbortError') {
-        //         console.error(error);
-        //       }
-        //     });
-        // };
 
-        //selection via map click:
-        mapview.on('click', (event) => {
-          //if don't click on a point, remove highlights from a prev click or search
-          if (highlight) {
-            highlight.remove();
-          }
-          if (searchWidget.resultGraphic) {
-            searchWidget.clear();
-          }
-
-          mapview.hitTest(event).then((response) => {
-            //If an orange pt is clicked: 0: incByCrossingLayer; 1: crossings. Should return pt from crossing layer only
-            //return feature var, only if a feature (not empty area) is clicked
-            //console.log('resp.results', response.results);
-            if (response.results.length) {
-              var feature = response.results.filter((result) => {
-                return result.graphic.layer === crossings;
-              })[0].graphic;
-
-              // Highlight feature
-              highlight = layerViewCrossings.highlight(feature);
-
-              mapview
-                .goTo({
-                  center: [
-                    feature.attributes.Longitude,
-                    feature.attributes.Latitude,
-                  ],
-                  scale: 24414,
-                  //zoom: 16,
-                })
-                .catch(function (error) {
-                  if (error.name != 'AbortError') {
-                    console.error(error);
-                  }
-                });
-
-              //diff than crossing ID in Search:
-              const selGxId = feature.attributes.CrossingID;
-              fillIncidentList(selGxId);
+            //remove existing List; populate the List of crossings with incidents
+            const listContent = document.getElementById('list-content');
+            if (listContent) {
+              listContent.remove();
             }
-          });
-        });
-
-        //selection via Search:
-        searchWidget.on('select-result', function (event) {
-          mapview.goTo({
-            scale: 24414,
-          });
-
-          const selGxId = event.result.feature.attributes.CrossingID;
-
-          fillIncidentList(selGxId);
-        });
-
-        function addFeatures(arr) {
-          // create an array of graphics based on the data above
-          var graphics = [];
-          var graphic;
-          for (var i = 0; i < arr.length; i++) {
-            graphic = new Graphic({
-              geometry: {
-                type: 'point',
-                latitude: arr[i].lat,
-                longitude: arr[i].long,
-              },
-              attributes: arr[i],
-            });
-            graphics.push(graphic);
-          }
-
-          // addEdits object tells applyEdits that you want to add the features
-          const addEdits = {
-            addFeatures: graphics,
+            const gxListItem = createGXingItem(incByGxArr);
+            document
+              .getElementById('list-panel')
+              .insertAdjacentHTML('beforeend', gxListItem);
+            listItemEffects();
+            listItemHeaderEffects();
           };
 
-          // apply the edits to the layer
-          applyEditsToLayer(addEdits);
-        }
+          const fillIncidentList = (selGxId) => {
+            const incListItem = createIncItem(
+              selGxId,
+              incByGxArr,
+              allIncidents
+            );
 
-        function applyEditsToLayer(edits) {
-          incByCrossingLayer
-            .applyEdits(edits)
-            .then(function (results) {
-              // if features were added - call queryFeatures to return
-              //    newly added graphics
-              if (results.addFeatureResults.length > 0) {
-                var objectIds = [];
-                results.addFeatureResults.forEach(function (item) {
-                  objectIds.push(item.objectId);
-                });
-                // query the newly added features from the layer
-                incByCrossingLayer.queryFeatures({
-                  objectIds: objectIds,
-                });
-              }
-            })
-            .catch(function (error) {
-              console.log(error);
-            });
-        }
-
-        const clearBtnHandler = () => {
-          if (highlight) {
-            highlight.remove();
-          }
-          if (searchWidget.resultGraphic) {
-            searchWidget.clear();
-          }
-
-          mapview
-            .goTo({
-              center: [-89.5, 39.75],
-              scale: 4750000,
-            })
-            .catch((error) => {
-              if (error.name != 'AbortError') {
-                console.error(error);
-              }
-            });
-
-          //remove existing List; populate the List of crossings with incidents
-          const listContent = document.getElementById('list-content');
-          if (listContent) {
+            //add incidents at selected crossing to DOM
+            const listContent = document.getElementById('list-content');
             listContent.remove();
-          }
-          const gxListItem = createGXingItem(incByGxArr);
-          document
-            .getElementById('list-panel')
-            .insertAdjacentHTML('beforeend', gxListItem);
-        };
-
-        const fillIncidentList = (selGxId) => {
-          const incListItem = createIncItem(selGxId, incByGxArr, allIncidents);
-
-          //add incidents at selected crossing to DOM
-          const listContent = document.getElementById('list-content');
-          listContent.remove();
-          document
-            .getElementById('list-panel')
-            .insertAdjacentHTML('beforeend', incListItem);
-          document
-            .getElementById('show-all')
-            .addEventListener('click', () => clearBtnHandler());
-        };
-      });
+            document
+              .getElementById('list-panel')
+              .insertAdjacentHTML('beforeend', incListItem);
+            document
+              .getElementById('show-all')
+              .addEventListener('click', () => clearBtnHandler());
+          };
+        });
       //END of whenLayerView - crossings
     });
     //END of whenLayerView - gxWithInc

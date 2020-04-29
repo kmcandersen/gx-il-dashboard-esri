@@ -1,6 +1,7 @@
-/* * {
-  border: 1px solid red;
-} */
+* {
+  /* border: 1px solid red; */
+  box-sizing: border-box;
+}
 
 html,
 body {
@@ -35,6 +36,18 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  height: 8vh;
+}
+
+.title {
+  display: flex;
+  align-items: center;
+}
+
+.title img {
+  height: 22px;
+  padding-right: 6px;
+  margin-bottom: 5px;
 }
 
 h1 {
@@ -79,7 +92,7 @@ h1 {
 
 #list-panel {
   width: calc(40vw - 30px);
-  height: 60vh;
+  height: calc(90vh - 10px);
   margin: 10px 10px 10px 0;
   border: 1px solid rgba(110, 110, 110, 0.3);
   overflow: scroll;
@@ -97,11 +110,16 @@ h1 {
 .list-headline {
   font-size: 1.1em;
   /* color: #FFA500; */
-  margin: 14px 0;
+  margin: 14px 0 0 0;
 }
 
 .collision-sym {
   color: #ffa500;
+  font-size: 1.3rem;
+}
+
+.no-collision-sym {
+  color: #ccc;
   font-size: 1.3rem;
 }
 
@@ -114,16 +132,20 @@ h1 {
   flex-direction: column;
 }
 
-.item-header {
+.item-headline {
   font-weight: normal;
   color: #0079c1;
   padding: 0px;
   margin: 5px 0px;
 }
 
-.item-header:hover {
+.item-headline:hover {
   color: #005e95;
   text-decoration: underline;
+}
+
+.esri-icon-zoom-in-magnifying-glass {
+  padding: 5px 7px;
 }
 
 .list-item {

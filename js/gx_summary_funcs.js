@@ -102,7 +102,7 @@ export const createGXingItem = (gxSummArr) => {
           ? gxSummArr[i].station2
           : gxSummArr[i].station1;
       htmlStringGx += `<div class="list-item" data-gxid=${gxid}>                
-        <div><h3 class="item-header" data-lat=${lat} data-long=${long}>No. ${gxid}</h3></div>
+        <div class="item-header"><h3 class="item-headline" data-lat=${lat} data-long=${long}>No. ${gxid}</h3></div>
         <div class="item-detail">
             <p><strong>Street name:</strong>  ${streetName1}</p>
             <p><strong>In/near:</strong>  ${station}</p>
@@ -113,8 +113,8 @@ export const createGXingItem = (gxSummArr) => {
   }
   htmlStringHeader = `<div id="list-content">
     <div class="list-header">
-      <h2 class="list-headline"><span class="collision-sym">●</span> Grade Crossings with Collisions</h2>
-      <p style="margin-bottom: 0;">${gxWithIncCount} crossings of ${gxSummArr.length.toLocaleString()} total IL crossings</p>
+      <h2 class="list-headline"> <span class="collision-sym">●</span> ${gxWithIncCount} Grade Crossings with Collisions</h2>
+      <p style="margin-top: 0;"><span class="no-collision-sym">●</span> of ${gxSummArr.length.toLocaleString()} total crossings</p>
       <p style="margin-top: 5px;">${incidentAll} collisions &nbsp;|&nbsp; ${injuryAll} injured &nbsp;|&nbsp; ${fatalityAll} fatalities</p>
     </div>
     <div id="list-body">`;
