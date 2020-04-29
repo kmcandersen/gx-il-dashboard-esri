@@ -24,7 +24,7 @@ require([
   //note: not visible; used as input to countIncByGx func
   let incidents = new GeoJSONLayer({
     title: 'incidents',
-    copyright: 'Federal Railroad Administration',
+    copyright: 'FRA',
     url: './data/gx_incidents.geojson',
     outFields: [
       'GXID',
@@ -47,7 +47,7 @@ require([
 
   let crossings = new GeoJSONLayer({
     title: 'crossings',
-    copyright: 'Federal Railroad Administration',
+    copyright: 'FRA',
     url: './data/il_crossings.geojson',
     outFields: [
       'OBJECTID',
@@ -222,7 +222,7 @@ require([
   // });
 
   //Apply Edits func (to populate feature layer) works wo this:
-  //mapview.whenLayerView(incByCrossingLayer).then(function (layerView) {
+  //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
   mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
     document.querySelector('.esri-search__input').onfocusout = null;
@@ -240,11 +240,71 @@ require([
         addFeatures(incByGxArr);
 
         //on load, populate the List of crossings with incidents
-        const gxListItem = createGXingItem(incByGxArr);
+        const gxListPanel = createGXingItem(incByGxArr);
         //add xings with inc to dom
         document
           .getElementById('list-panel')
-          .insertAdjacentHTML('beforeend', gxListItem);
+          .insertAdjacentHTML('beforeend', gxListPanel);
+
+        //Gx with Incidents List: on mouseover, shading on list & feature highlighted
+        const listItems = document.querySelectorAll('.list-item');
+        listItems.forEach((item) => {
+          item.addEventListener('mouseover', (event) => {
+            item.classList.add('list-item-highlight');
+            var query = crossings.createQuery();
+            var queryString = 'CrossingID = ' + "'" + item.dataset.gxid + "'";
+            query.where = queryString;
+            crossings.queryFeatures(query).then(function (result) {
+              if (highlight) {
+                highlight.remove();
+              }
+              highlight = layerViewCrossings.highlight(result.features);
+            });
+          });
+        });
+        listItems.forEach((item) => {
+          item.addEventListener('mouseout', (event) => {
+            item.classList.remove('list-item-highlight');
+            if (highlight) {
+              highlight.remove();
+            }
+          });
+        });
+
+        //Gx with Incidents List: click on Gxid No. > Zooms to Gx
+        const itemHeaders = document.querySelectorAll('.item-header');
+        itemHeaders.forEach((itemHdr) => {
+          itemHdr.addEventListener('click', (event) => {
+            mapview
+              .goTo({
+                center: [
+                  Number(itemHdr.dataset.long),
+                  Number(itemHdr.dataset.lat),
+                ],
+                scale: 24414,
+                //zoom: 16,
+              })
+              .catch(function (error) {
+                if (error.name != 'AbortError') {
+                  console.error(error);
+                }
+              });
+          });
+        });
+        // console.log('itemHeader', itemHeader[0].dataset.coords);
+        // const gxidHandler = (coords) => {
+        //   mapview
+        //     .goTo({
+        //       center: [coords],
+        //       scale: 24414,
+        //       //zoom: 16,
+        //     })
+        //     .catch(function (error) {
+        //       if (error.name != 'AbortError') {
+        //         console.error(error);
+        //       }
+        //     });
+        // };
 
         //selection via map click:
         mapview.on('click', (event) => {
@@ -259,6 +319,7 @@ require([
           mapview.hitTest(event).then((response) => {
             //If an orange pt is clicked: 0: incByCrossingLayer; 1: crossings. Should return pt from crossing layer only
             //return feature var, only if a feature (not empty area) is clicked
+            //console.log('resp.results', response.results);
             if (response.results.length) {
               var feature = response.results.filter((result) => {
                 return result.graphic.layer === crossings;

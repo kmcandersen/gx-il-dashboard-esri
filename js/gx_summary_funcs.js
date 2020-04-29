@@ -83,9 +83,15 @@ export const createGXingItem = (gxSummArr) => {
   //for each crossing with 1+ incident, add an item in htmlStringGx
   //re. "station" var: prefer to use 'station1' from crossings file, bc that is what's used in Search widget, but if that's null, use 'station2' from incidents file.
   for (let i = 0; i < gxSummArr.length; i++) {
-    let { gxid, streetName1, incidentTot, injuryTot, fatalityTot } = gxSummArr[
-      i
-    ];
+    let {
+      gxid,
+      streetName1,
+      incidentTot,
+      injuryTot,
+      fatalityTot,
+      lat,
+      long,
+    } = gxSummArr[i];
     if (incidentTot > 0) {
       gxWithIncCount += 1;
       incidentAll += incidentTot;
@@ -95,9 +101,9 @@ export const createGXingItem = (gxSummArr) => {
         gxSummArr[i].station1 === null
           ? gxSummArr[i].station2
           : gxSummArr[i].station1;
-      htmlStringGx += `<div class="list-item" style="background-color: #fff;">                 
-        <div><h3 class="item-header">No. ${gxid}</h3></div>
-        <div class="list-detail">
+      htmlStringGx += `<div class="list-item" data-gxid=${gxid}>                
+        <div><h3 class="item-header" data-lat=${lat} data-long=${long}>No. ${gxid}</h3></div>
+        <div class="item-detail">
             <p><strong>Street name:</strong>  ${streetName1}</p>
             <p><strong>In/near:</strong>  ${station}</p>
             <p><strong>Total collisions:</strong> ${incidentTot} &nbsp;| &nbsp; <strong>Injured:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</p>
@@ -106,10 +112,10 @@ export const createGXingItem = (gxSummArr) => {
     }
   }
   htmlStringHeader = `<div id="list-content">
-    <div id="list-header">
-      <h2 id="list-headline"><span class="collision-sym">●</span> Grade Crossings with Collisions</h2>
-      <p style="margin-bottom: 0;">${gxWithIncCount} crossings of ${gxSummArr.length.toLocaleString()} crossings in IL</p>
-      <p style="margin-top: 5px;">${incidentAll} collisions &nbsp;| &nbsp; ${injuryAll} injured &nbsp;| &nbsp; ${fatalityAll} fatalities</p>
+    <div class="list-header">
+      <h2 class="list-headline"><span class="collision-sym">●</span> Grade Crossings with Collisions</h2>
+      <p style="margin-bottom: 0;">${gxWithIncCount} crossings of ${gxSummArr.length.toLocaleString()} total IL crossings</p>
+      <p style="margin-top: 5px;">${incidentAll} collisions &nbsp;|&nbsp; ${injuryAll} injured &nbsp;|&nbsp; ${fatalityAll} fatalities</p>
     </div>
     <div id="list-body">`;
   htmlString += htmlStringHeader;

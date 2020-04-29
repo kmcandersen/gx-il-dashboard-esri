@@ -26,6 +26,8 @@ body {
   color: #4c4c4c;
 }
 
+/* Title bar */
+
 .header {
   background: #ccc;
   border: 1px solid #a9a9a9;
@@ -53,6 +55,8 @@ h1 {
   align-self: flex-start;
 }
 
+/* Map and List */
+
 .main {
   display: flex;
   flex-direction: row;
@@ -71,6 +75,8 @@ h1 {
   border: 1px solid rgba(110, 110, 110, 0.3);
 }
 
+/* Lists */
+
 #list-panel {
   width: calc(40vw - 30px);
   height: 60vh;
@@ -80,19 +86,15 @@ h1 {
   /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); */
 }
 
-#list-header {
+.list-header {
   font-size: 1.1rem;
   background: #fff;
-  padding: 0 11px;
+  padding: 0 17px;
   border-bottom: 1px solid rgba(110, 110, 110, 0.3);
   /* padding: 10px; */
 }
 
-#list-header-first-p {
-  color: 'red';
-}
-
-#list-headline {
+.list-headline {
   font-size: 1.1em;
   /* color: #FFA500; */
   margin: 14px 0;
@@ -104,24 +106,28 @@ h1 {
 }
 
 #list-body {
-  background-color: #f5f5f5;
+  background-color: #efefef;
   padding: 6px 7px 0;
   justify-content: center;
-  align-items: flex-start;
   flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  /* margin: 0px 0px 15px 0px; */
 }
 
 .item-header {
   font-weight: normal;
-  color: #5d5d5d;
+  color: #0079c1;
   padding: 0px;
   margin: 5px 0px;
 }
 
+.item-header:hover {
+  color: #005e95;
+  text-decoration: underline;
+}
+
 .list-item {
+  background-color: #fff;
   box-shadow: 0 1px 0 rgba(110, 110, 110, 0.3);
   padding: 7px 10px;
   cursor: pointer;
@@ -135,13 +141,21 @@ h1 {
   justify-content: space-around; */
 }
 
-.list-detail > p {
+.list-item-highlight {
+  background-color: #f8f8f8;
+}
+
+.item-detail > p {
   margin: 5px 0 5px 0;
 }
+
+/* Incidents List only */
 
 button:focus {
   outline-color: #a75000;
 }
+
+/* Charts row */
 
 #chart-panel {
   background: #333;
