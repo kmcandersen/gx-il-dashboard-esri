@@ -93,6 +93,10 @@ require([
         type: 'string',
       },
       {
+        name: 'Railroad',
+        type: 'string',
+      },
+      {
         name: 'Street',
         type: 'string',
       },
