@@ -119,7 +119,7 @@ h1 {
 }
 
 .no-collision-sym {
-  color: #ccc;
+  color: #c8c8c8;
   font-size: 1.3rem;
 }
 
@@ -137,10 +137,11 @@ h1 {
   color: #0079c1;
   padding: 0px;
   margin: 5px 0px;
+  cursor: pointer;
 }
 
 .item-headline:hover {
-  color: #005e95;
+  /* color: #005e95; */
   text-decoration: underline;
 }
 
@@ -152,7 +153,6 @@ h1 {
   background-color: #fff;
   box-shadow: 0 1px 0 rgba(110, 110, 110, 0.3);
   padding: 7px 10px;
-  cursor: pointer;
   margin: 6px 8px;
   border: 1px solid rgba(110, 110, 110, 0.3);
   border-color: transparent;

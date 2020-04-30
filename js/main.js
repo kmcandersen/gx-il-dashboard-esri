@@ -49,7 +49,7 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: '#ccc',
+      color: '#c8c8c8',
       outline: null,
       size: 4,
     },
@@ -325,6 +325,7 @@ require([
             const itemHeaders = document.querySelectorAll('.item-headline');
             itemHeaders.forEach((itemHdr) => {
               itemHdr.addEventListener('click', (event) => {
+                let gxid = itemHdr.textContent.slice(4);
                 mapview
                   .goTo({
                     center: [
@@ -339,6 +340,7 @@ require([
                       console.error(error);
                     }
                   });
+                fillIncidentList(gxid);
               });
             });
           };
