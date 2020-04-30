@@ -102,7 +102,9 @@ export const createGXingItem = (gxSummArr) => {
           ? gxSummArr[i].station2
           : gxSummArr[i].station1;
       htmlStringGx += `<div class="list-item" data-gxid=${gxid}>                
-        <div class="item-header"><h3 class="item-headline" data-lat=${lat} data-long=${long}>No. ${gxid}</h3></div>
+        <div class="item-header">
+          <h3 class="item-headline" data-lat=${lat} data-long=${long}>No. ${gxid}</h3>
+        </div>
         <div class="item-detail">
             <p><strong>Street name:</strong>  ${streetName1}</p>
             <p><strong>In/near:</strong>  ${station}</p>

@@ -59,9 +59,9 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: '#ccc',
+      color: '#b4b4b4',
       outline: {
-        color: '#959595',
+        color: '#828282',
         width: 0.5,
       },
       size: 8,

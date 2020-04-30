@@ -131,12 +131,21 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
 
   //set up Incident List header
   //incl button to "clear" selection & show list of all crossings with incidents
-  htmlString = `<div id="list-content"><div id="list-header"><h4>Crossing No. ${gxid}</h4><button id='show-all' type="button" class="btn btn-primary" >Clear Selection</button><p>${incidentTot} ${
+  htmlString += `<div id="list-content">
+    <div class="list-header">
+      <h2 class="list-headline">Crossing No. ${gxid}</h2>
+      <div class="links-row">
+        <button id='show-all' type="button" class="btn btn-primary" >Clear Selection</button>
+        <div class="item-headline"><div class="esri-icon-link"></div><a href=${`https://icc.illinois.gov/rail-safety/crossing/${gxid}/inventory`}>ICC webpage</a></div>
+      </div>
+      <p>${incidentTot} ${
     incidentTot === 1 ? 'collision' : 'collisions'
-  } | ${injuryTot} ${
-    injuryTot === 1 ? 'injury' : 'injuries'
-  } | ${fatalityTot} ${fatalityTot === 1 ? 'fatality' : 'fatalities'}</p>
-    <i className="linkify icon"></i><a href=${`https://icc.illinois.gov/rail-safety/crossing/${gxid}/inventory`}>ICC webpage</a></div><div id="list-items">`;
+  } | ${injuryTot} ${injuryTot === 1 ? 'injury' : 'injured'} | ${fatalityTot} ${
+    fatalityTot === 1 ? 'fatality' : 'fatalities'
+  }
+      </p>
+    </div>
+    <div id="list-body">`;
 
   //loop thru incident array; if gx in array matches selected gx, populate htmlString incident info
   for (let i = 0; i < incidentArr.length; i++) {
@@ -160,32 +169,23 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
 
       let date = new Date(DATE).toLocaleDateString();
 
-      htmlStringIncidents += `<div className="content">
-          <div className="header text-bg-gray"><h5>${typeVehicle(
-            typVeh
-          )} Collision: ${date} &nbsp;| &nbsp;${time}</h5></div>
-          <div className="list-body">
-              <div className="description top-margin-item"><strong>Train type:</strong>  ${trainType(
-                typEq
-              )}</div>
-  
-              <div className="description top-margin-item"><strong>Railroad:</strong> ${railroad}</div>
-  
-              <div className="description top-margin-item"><strong>Crossing:</strong> ${streetName2}</div>
-  
-              <div className="description top-margin-item"><strong> Crossing Type:</strong> ${pubXing(
-                publc
-              )}</div>
-  
-              <div className="description top-margin-item"><strong>City:</strong> ${city} &nbsp;| &nbsp;<strong>County:</strong>
-              ${county}</div>
-  
-              <div className="description top-margin-item"><strong>Injured:</strong> ${totInj} &nbsp;| &nbsp;
-              <strong>Fatalities:</strong> ${totKld}</div>
-  
-              <div className="description top-margin-item"><strong>Description:</strong> ${narrative}</div>
+      htmlStringIncidents += `<div class="list-item">
+          <div class="item-header">
+            <h3 class="inc-item-headline">${typeVehicle(
+              typVeh
+            )} Collision: ${date} &nbsp;| &nbsp;${time}</h3>
           </div>
-      <div className="ui divider"></div>
+          <div class="item-detail">
+              <p><strong>Train type:</strong>  ${trainType(typEq)}</p> 
+              <p><strong>Railroad:</strong> ${railroad}</p> 
+              <p><strong>Crossing:</strong> ${streetName2}</p>  
+              <p><strong> Crossing Type:</strong> ${pubXing(publc)}</p> 
+              <p><strong>City:</strong> ${city} &nbsp;| &nbsp;<strong>County:</strong>
+              ${county}</p>  
+              <p><strong>Injured:</strong> ${totInj} &nbsp;| &nbsp;
+              <strong>Fatalities:</strong> ${totKld}</p> 
+              <p><strong>Description:</strong> ${narrative}</p>
+          </div>
       </div>
   `;
     }

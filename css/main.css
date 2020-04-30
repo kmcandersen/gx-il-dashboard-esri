@@ -125,7 +125,7 @@ h1 {
 
 #list-body {
   background-color: #efefef;
-  padding: 6px 7px 0;
+  padding: 6px 7px;
   justify-content: center;
   flex: 1 1 auto;
   display: flex;
@@ -140,13 +140,14 @@ h1 {
   cursor: pointer;
 }
 
+.item-headline a {
+  text-decoration: none;
+  color: #0079c1;
+}
+
 .item-headline:hover {
   /* color: #005e95; */
   text-decoration: underline;
-}
-
-.esri-icon-zoom-in-magnifying-glass {
-  padding: 5px 7px;
 }
 
 .list-item {
@@ -173,8 +174,38 @@ h1 {
 
 /* Incidents List only */
 
+.links-row {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+button {
+  background-color: #0079c1;
+  border: none;
+  padding: 0 10px;
+  color: white;
+  font-size: 14px;
+  font-family: 'Avenir Next W00';
+}
+
+button:hover {
+  background-color: #005e95;
+  cursor: pointer;
+}
+
 button:focus {
   outline-color: #a75000;
+}
+
+.esri-icon-link {
+  padding: 0 5px 0 0;
+}
+
+.inc-item-headline {
+  font-weight: normal;
+  padding: 0px;
+  margin: 5px 0px;
 }
 
 /* Charts row */
