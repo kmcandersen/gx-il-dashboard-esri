@@ -12,7 +12,7 @@ body {
   font-family: 'Avenir Next W00';
 }
 
-.loadingspinner {
+.loading-spinner {
   margin: 0;
   position: absolute;
   top: 50%;
@@ -84,6 +84,15 @@ h1 {
   letter-spacing: 1px;
   margin: 0;
   font-size: 0.9em;
+}
+
+.sub-title a {
+  text-decoration: none;
+  color: #4c4c4c;
+}
+
+.sub-title a:hover {
+  text-decoration: underline;
 }
 
 #search-container {

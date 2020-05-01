@@ -114,6 +114,9 @@ require([
     ],
     objectIdField: 'OBJECTID',
     renderer: smallGxPoints,
+    // popupTemplate: {
+    //   title: 'No. {CrossingID}, {Street}',
+    // },
   });
 
   let map = new Map({
@@ -131,6 +134,21 @@ require([
     highlightOptions: {
       fillOpacity: 0,
       haloColor: '#de2900',
+    },
+    popup: {
+      autoOpenEnabled: false,
+      visible: false,
+      actions: [],
+      alignment: 'top-right',
+      collapseEnabled: true,
+      dockOptions: {
+        buttonEnabled: false,
+      },
+      visibleElements: {
+        closeButton: false,
+      },
+      content: `<em>Click point to select</em>`,
+      // highlightEnabled: true,
     },
   });
 
@@ -252,10 +270,10 @@ require([
   mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
     document.querySelector('.esri-search__input').onfocusout = null;
 
-    let getIt = document.querySelector('.loadingspinner');
+    let spinner = document.querySelector('.loading-spinner');
     // Hide the loading indicator when the view stops updating
     watchUtils.whenFalseOnce(mapview, 'updating', function (event) {
-      getIt.remove();
+      spinner.remove();
     });
 
     var allIncidents, allCrossings, highlight;
@@ -344,6 +362,50 @@ require([
           listItemEffects();
           listItemHeaderEffects();
 
+          //popup on mouseover
+          mapview.on('pointer-move', (event) => {
+            mapview.hitTest(event).then((response) => {
+              //**response ALWAYS has a length bc pointer on basemap returns a result */
+              if (response.results.length > 1) {
+                const feature = response.results.filter(function (result) {
+                  return result.graphic.layer === crossings;
+                })[0].graphic;
+
+                var Latitude = feature.attributes.Latitude;
+                var Longitude = feature.attributes.Longitude;
+                var Station = feature.attributes.Station
+                  ? feature.attributes.Station
+                  : 'NA';
+                var Street = feature.attributes.Street
+                  ? feature.attributes.Street
+                  : 'NA';
+
+                mapview.popup.location = {
+                  latitude: Latitude,
+                  longitude: Longitude,
+                };
+                mapview.popup.title = `${Street}<br/>In/near: ${Station}`;
+                // Displays the popup (hidden by default)
+                mapview.popup.visible = true;
+                //remove any existing highlight
+                if (highlight) {
+                  highlight.remove();
+                }
+                if (searchWidget.resultGraphic) {
+                  searchWidget.clear();
+                }
+                // Highlight feature
+                highlight = layerViewCrossings.highlight(feature);
+              } else {
+                if (highlight) {
+                  highlight.remove();
+                  highlight = null;
+                }
+                mapview.popup.visible = false;
+              }
+            });
+          });
+
           //selection via map click:
           mapview.on('click', (event) => {
             //if don't click on a point, remove highlights from a prev click or search
@@ -353,6 +415,7 @@ require([
             if (searchWidget.resultGraphic) {
               searchWidget.clear();
             }
+            mapview.popup.visible = false;
 
             mapview.hitTest(event).then((response) => {
               //If an orange pt is clicked: 0: incByCrossingLayer; 1: crossings. Should return pt from crossing layer only
@@ -393,6 +456,12 @@ require([
             mapview.goTo({
               scale: 24414,
             });
+
+            if (highlight) {
+              highlight.remove();
+            }
+
+            mapview.popup.visible = false;
 
             const selGxId = event.result.feature.attributes.CrossingID;
 
