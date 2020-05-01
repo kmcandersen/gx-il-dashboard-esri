@@ -34,7 +34,6 @@ require([
       'DATE',
       'TIME',
       'COUNTY',
-      'CITY',
       'STATION',
       'NARRATIVE',
       'TOTINJ',
@@ -190,14 +189,6 @@ require([
         type: 'string',
       },
       {
-        name: 'city1',
-        type: 'string',
-      },
-      {
-        name: 'city2',
-        type: 'string',
-      },
-      {
         name: 'incidentTot',
         type: 'integer',
       },
@@ -255,15 +246,17 @@ require([
   // Adds home button
   mapview.ui.add(homeBtn, 'top-left');
 
-  // mapview.ui.add(searchWidget, {
-  //   position: 'top-right',
-  // });
-
   //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
   mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
     document.querySelector('.esri-search__input').onfocusout = null;
+
+    let getIt = document.querySelector('.loadingspinner');
+    // Hide the loading indicator when the view stops updating
+    watchUtils.whenFalseOnce(mapview, 'updating', function (event) {
+      getIt.remove();
+    });
 
     var allIncidents, allCrossings, highlight;
     // watchUtils.whenFalseOnce(layerView, 'updating', (value) => {

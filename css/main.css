@@ -12,6 +12,29 @@ body {
   font-family: 'Avenir Next W00';
 }
 
+.loadingspinner {
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  display: 'block';
+  pointer-events: none;
+  width: 4em;
+  height: 4em;
+  border: 0.4em solid transparent;
+  border-color: #eee;
+  border-top-color: #0079c1;
+  border-radius: 50%;
+  animation: loadingspin 1s linear infinite;
+}
+
+@keyframes loadingspin {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
 .wrapper {
   /* flex-flow: row wrap; */
   width: 100%;
