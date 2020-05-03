@@ -3,6 +3,10 @@
   box-sizing: border-box;
 }
 
+:focus {
+  outline: 2px solid #909090;
+}
+
 html,
 body {
   padding: 0;
@@ -206,6 +210,11 @@ h1 {
 
 /* Incidents List only */
 
+.esri-icon-zoom-in-magnifying-glass {
+  padding-left: 10px;
+  cursor: pointer;
+}
+
 .list-header-detail > p {
   font-size: 1rem;
   margin: 5px 0;
@@ -234,10 +243,10 @@ button:hover {
   background-color: #005e95;
   cursor: pointer;
 }
-
+/* 
 button:focus {
   outline-color: #a75000;
-}
+} */
 
 .esri-icon-link {
   padding: 0 5px 0 0;

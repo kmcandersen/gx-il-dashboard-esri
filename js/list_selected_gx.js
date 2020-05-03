@@ -11,6 +11,8 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
     station = '',
     county2 = '',
     pubXing2 = '',
+    lat = 0,
+    long = 0,
     injuryTot = 0,
     fatalityTot = 0,
     incidentTot = 0,
@@ -25,6 +27,8 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
       station = incByGxArr[i].station;
       county2 = incByGxArr[i].county2;
       pubXing2 = incByGxArr[i].pubXing2;
+      lat = incByGxArr[i].lat;
+      long = incByGxArr[i].long;
       incidentTot = incByGxArr[i].incidentTot;
       injuryTot = incByGxArr[i].injuryTot;
       fatalityTot = incByGxArr[i].fatalityTot;
@@ -35,7 +39,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
   //incl button to "clear" selection & show list of all crossings with incidents
   htmlString += `<div id="list-content">
     <div class="list-header">
-      <h2 class="list-headline">Crossing No. ${gxid}</h2>
+      <h2 class="list-headline" id="for-zoom" data-gxid=${gxid} data-lat=${lat} data-long=${long}>Crossing No. ${gxid}<div class="esri-icon-zoom-in-magnifying-glass"></div></h2>
       <div class="list-header-detail">
         <p><strong>Railroad:</strong> ${railroad1}</p> 
         <p><strong>Crossing:</strong> ${streetName1}</p>  

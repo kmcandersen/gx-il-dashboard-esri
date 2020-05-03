@@ -313,6 +313,7 @@ require([
             listItems.forEach((item) => {
               item.addEventListener('mouseover', (event) => {
                 item.classList.add('list-item-highlight');
+                //
                 var query = crossings.createQuery();
                 var queryString =
                   'CrossingID = ' + "'" + item.dataset.gxid + "'";
@@ -323,6 +324,7 @@ require([
                   }
                   highlight = layerViewCrossings.highlight(result.features);
                 });
+                //
               });
             });
             listItems.forEach((item) => {
@@ -388,19 +390,19 @@ require([
                 // Displays the popup (hidden by default)
                 mapview.popup.visible = true;
                 //remove any existing highlight
-                if (highlight) {
-                  highlight.remove();
-                }
-                if (searchWidget.resultGraphic) {
-                  searchWidget.clear();
-                }
+                // if (highlight) {
+                //   highlight.remove();
+                // }
+                // if (searchWidget.resultGraphic) {
+                //   searchWidget.clear();
+                // }
                 // Highlight feature
-                highlight = layerViewCrossings.highlight(feature);
+                //highlight = layerViewCrossings.highlight(feature);
               } else {
-                if (highlight) {
-                  highlight.remove();
-                  highlight = null;
-                }
+                // if (highlight) {
+                //   highlight.remove();
+                //   highlight = null;
+                // }
                 mapview.popup.visible = false;
               }
             });
@@ -418,10 +420,7 @@ require([
             mapview.popup.visible = false;
 
             mapview.hitTest(event).then((response) => {
-              //If an orange pt is clicked: 0: incByCrossingLayer; 1: crossings. Should return pt from crossing layer only
-              //return feature var, only if a feature (not empty area) is clicked
-              //console.log('resp.results', response.results);
-              if (response.results.length) {
+              if (response.results.length > 1) {
                 var feature = response.results.filter((result) => {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
@@ -515,6 +514,38 @@ require([
               });
           }
 
+          const magnifyHandler = () => {
+            if (highlight) {
+              highlight.remove();
+            }
+            if (searchWidget.resultGraphic) {
+              searchWidget.clear();
+            }
+            const item = document.getElementById('for-zoom');
+
+            var query = crossings.createQuery();
+            var queryString = 'CrossingID = ' + "'" + item.dataset.gxid + "'";
+            query.where = queryString;
+            crossings.queryFeatures(query).then(function (result) {
+              if (highlight) {
+                highlight.remove();
+              }
+              highlight = layerViewCrossings.highlight(result.features);
+            });
+
+            mapview
+              .goTo({
+                center: [Number(item.dataset.long), Number(item.dataset.lat)],
+                scale: 24414,
+                //zoom: 16,
+              })
+              .catch(function (error) {
+                if (error.name != 'AbortError') {
+                  console.error(error);
+                }
+              });
+          };
+
           const clearBtnHandler = () => {
             if (highlight) {
               highlight.remove();
@@ -560,6 +591,9 @@ require([
             document
               .getElementById('list-panel')
               .insertAdjacentHTML('beforeend', incListItem);
+            document
+              .querySelector('.esri-icon-zoom-in-magnifying-glass')
+              .addEventListener('click', () => magnifyHandler());
             document
               .getElementById('show-all')
               .addEventListener('click', () => clearBtnHandler());
