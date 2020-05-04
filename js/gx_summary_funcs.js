@@ -75,34 +75,48 @@ export const createGXingItem = (gxSummArr) => {
       long,
     } = gxSummArr[i];
     if (incidentTot > 0) {
+      //for gx with inc, add to totals
       gxWithIncCount += 1;
       incidentAll += incidentTot;
       injuryAll += injuryTot;
       fatalityAll += fatalityTot;
 
-      htmlStringGx += `<div class="list-item" data-gxid=${gxid}>                
-        <div class="item-header">
-          <h3 class="item-headline" data-lat=${lat} data-long=${long}>No. ${gxid}</h3>
-        </div>
+      let otherGxCount = (gxSummArr.length - gxWithIncCount).toLocaleString();
 
-        <div class="item-detail">
-            <p><strong>Street name:</strong>  ${streetName1}</p>
-            <p><strong>In/near:</strong>  ${station}</p>
-            <p><strong>Total collisions:</strong> ${incidentTot} &nbsp;| &nbsp; <strong>Injured:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</p>
+      htmlStringHeader = `<div id="list-content">
+        <div class="list-header">
+          <h2 class="list-headline"> <span class="collision-sym">●</span> ${gxWithIncCount} Grade Crossings with Collisions</h2>
+          <p style="margin-top: 0;"><span class="no-collision-sym">●</span> ${otherGxCount} other crossings</p>
+          <p style="margin-top: 5px;">${incidentAll} collisions &nbsp;|&nbsp; ${injuryAll} injured &nbsp;|&nbsp; ${fatalityAll} fatalities</p>
         </div>
-    </div>`;
+        <div class="list-subhead">
+          <p>Priority Crossings</p>
+          <p>3+ collisions</p>
+          <p>Hover on list item to highlight map location</p>
+        </div>
+        <div id="list-body" class="priority-gx">
+`;
+
+      //for gx with > 2 inc, also create item for DOM
+      if (incidentTot > 2) {
+        htmlStringGx += `<div class="list-item" data-gxid=${gxid}>                
+          <div class="item-header">
+            <h3 class="item-headline" data-lat=${lat} data-long=${long}>No. ${gxid}</h3>
+          </div>
+  
+          <div class="item-detail">
+              <p><strong>Street name:</strong>  ${streetName1}</p>
+              <p><strong>In/near:</strong>  ${station}</p>
+              <p><strong>Total collisions:</strong> ${incidentTot} &nbsp;| &nbsp; <strong>Injured:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</p>
+          </div>
+      </div>`;
+        //priority inc
+      }
+      //all inc
     }
+    //for loop
   }
 
-  let otherGxCount = (gxSummArr.length - gxWithIncCount).toLocaleString();
-
-  htmlStringHeader = `<div id="list-content">
-    <div class="list-header">
-      <h2 class="list-headline"> <span class="collision-sym">●</span> ${gxWithIncCount} Grade Crossings with Collisions</h2>
-      <p style="margin-top: 0;"><span class="no-collision-sym">●</span> ${otherGxCount} other crossings</p>
-      <p style="margin-top: 5px;">${incidentAll} collisions &nbsp;|&nbsp; ${injuryAll} injured &nbsp;|&nbsp; ${fatalityAll} fatalities</p>
-    </div>
-    <div id="list-body">`;
   htmlString += htmlStringHeader;
   htmlString += htmlStringGx;
   htmlString += `</div></div>`;

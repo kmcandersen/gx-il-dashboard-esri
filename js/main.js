@@ -114,9 +114,6 @@ require([
     ],
     objectIdField: 'OBJECTID',
     renderer: smallGxPoints,
-    // popupTemplate: {
-    //   title: 'No. {CrossingID}, {Street}',
-    // },
   });
 
   let map = new Map({
@@ -126,10 +123,8 @@ require([
 
   let mapview = new MapView({
     container: 'mapview',
-    // padding: { top: 55 },
     map: map,
     center: [-89.5, 39.75],
-    //zoom: 6,
     scale: 3750000,
     highlightOptions: {
       fillOpacity: 0,
@@ -139,10 +134,11 @@ require([
       autoOpenEnabled: false,
       visible: false,
       actions: [],
-      alignment: 'top-right',
+      alignment: 'top-center',
       collapseEnabled: true,
       dockOptions: {
         buttonEnabled: false,
+        breakpoint: false,
       },
       visibleElements: {
         closeButton: false,
@@ -255,7 +251,7 @@ require([
         outFields: ['CrossingID', 'Street'],
         name: 'Crossing ID or Street Name',
         placeholder: 'Search Crossing ID or Street',
-        zoom: 12,
+        scale: 24414,
       },
     ],
   });
@@ -350,7 +346,6 @@ require([
                       Number(itemHdr.dataset.lat),
                     ],
                     scale: 24414,
-                    //zoom: 16,
                   })
                   .catch(function (error) {
                     if (error.name != 'AbortError') {
@@ -389,20 +384,7 @@ require([
                 mapview.popup.title = `${Street}<br/>In/near: ${Station}`;
                 // Displays the popup (hidden by default)
                 mapview.popup.visible = true;
-                //remove any existing highlight
-                // if (highlight) {
-                //   highlight.remove();
-                // }
-                // if (searchWidget.resultGraphic) {
-                //   searchWidget.clear();
-                // }
-                // Highlight feature
-                //highlight = layerViewCrossings.highlight(feature);
               } else {
-                // if (highlight) {
-                //   highlight.remove();
-                //   highlight = null;
-                // }
                 mapview.popup.visible = false;
               }
             });
@@ -435,7 +417,6 @@ require([
                       feature.attributes.Latitude,
                     ],
                     scale: 24414,
-                    //zoom: 16,
                   })
                   .catch(function (error) {
                     if (error.name != 'AbortError') {
@@ -497,7 +478,7 @@ require([
               .applyEdits(edits)
               .then(function (results) {
                 // if features were added - call queryFeatures to return
-                //    newly added graphics
+                //newly added graphics
                 if (results.addFeatureResults.length > 0) {
                   var objectIds = [];
                   results.addFeatureResults.forEach(function (item) {
@@ -537,7 +518,6 @@ require([
               .goTo({
                 center: [Number(item.dataset.long), Number(item.dataset.lat)],
                 scale: 24414,
-                //zoom: 16,
               })
               .catch(function (error) {
                 if (error.name != 'AbortError') {
