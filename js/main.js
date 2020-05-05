@@ -124,8 +124,8 @@ require([
   let mapview = new MapView({
     container: 'mapview',
     map: map,
-    center: [-89.5, 39.75],
-    scale: 3750000,
+    //center: [-89.5, 40.4],
+    // scale: 3750000,
     highlightOptions: {
       fillOpacity: 0,
       haloColor: '#de2900',
@@ -260,6 +260,14 @@ require([
   // Adds home button
   mapview.ui.add(homeBtn, 'top-left');
 
+  var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
+  var homeScale = viewportWidth > 680 ? 3750000 : 8000000;
+  var homeCenter = viewportWidth > 680 ? [-89.5, 40.4] : [-89.5, 40.0];
+  mapview.scale = homeScale;
+  mapview.center = homeCenter;
+  //formerly: scale: 24414
+  var zoomScale = 15000;
+
   //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
@@ -271,10 +279,7 @@ require([
     watchUtils.whenFalseOnce(mapview, 'updating', function (event) {
       spinner.remove();
     });
-
     var allIncidents, allCrossings, highlight;
-    // watchUtils.whenFalseOnce(layerView, 'updating', (value) => {
-    //   if (!value) {
 
     mapview.watch('scale', function (newValue) {
       crossings.renderer = newValue <= 187500 ? largeGxPoints : smallGxPoints;
@@ -345,7 +350,7 @@ require([
                       Number(itemHdr.dataset.long),
                       Number(itemHdr.dataset.lat),
                     ],
-                    scale: 24414,
+                    scale: zoomScale,
                   })
                   .catch(function (error) {
                     if (error.name != 'AbortError') {
@@ -356,14 +361,17 @@ require([
               });
             });
           };
-          listItemEffects();
+          if (viewportWidth > 680) {
+            listItemEffects();
+          }
           listItemHeaderEffects();
 
           //popup on mouseover
           mapview.on('pointer-move', (event) => {
             mapview.hitTest(event).then((response) => {
               //**response ALWAYS has a length bc pointer on basemap returns a result */
-              if (response.results.length > 1) {
+
+              if (response.results.length > 1 && viewportWidth > 680) {
                 const feature = response.results.filter(function (result) {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
@@ -383,6 +391,7 @@ require([
                 };
                 mapview.popup.title = `${Street}<br/>In/near: ${Station}`;
                 // Displays the popup (hidden by default)
+
                 mapview.popup.visible = true;
               } else {
                 mapview.popup.visible = false;
@@ -416,7 +425,7 @@ require([
                       feature.attributes.Longitude,
                       feature.attributes.Latitude,
                     ],
-                    scale: 24414,
+                    scale: zoomScale,
                   })
                   .catch(function (error) {
                     if (error.name != 'AbortError') {
@@ -434,7 +443,7 @@ require([
           //selection via Search:
           searchWidget.on('select-result', function (event) {
             mapview.goTo({
-              scale: 24414,
+              scale: zoomScale,
             });
 
             if (highlight) {
@@ -517,7 +526,7 @@ require([
             mapview
               .goTo({
                 center: [Number(item.dataset.long), Number(item.dataset.lat)],
-                scale: 24414,
+                scale: zoomScale,
               })
               .catch(function (error) {
                 if (error.name != 'AbortError') {
@@ -536,8 +545,8 @@ require([
 
             mapview
               .goTo({
-                center: [-89.5, 39.75],
-                scale: 3750000,
+                center: homeCenter,
+                scale: homeScale,
               })
               .catch((error) => {
                 if (error.name != 'AbortError') {
@@ -578,10 +587,13 @@ require([
               .getElementById('show-all')
               .addEventListener('click', () => clearBtnHandler());
           };
+
+          //end of crossings.queryFeatures
         });
-      //END of whenLayerView - crossings
+      //end of incidents.queryFeatures
     });
-    //END of whenLayerView - gxWithInc
-    //});
+    //END of whenLayerView - crossings
   });
+  //END of whenLayerView - gxWithInc
+  //});
 });
