@@ -1,12 +1,18 @@
 //run countIncByGx to create a new array, with an object for each crossing in IL, and a summary of characteristics and incidents (if applicable) at the crossing. This array is the data source for the incByCrossingLayer feature layer in main.js, and a definitionExpression limits visible points to the crossings with incidents.
 
 //variable name + 1: from crossings geojson, variable name + 2: from incidents geojson
+
+import './to_title_case.js';
+
 export const countIncByGx = (crossingsArr, incidentsArr) => {
   //loop thru crossings, create an obj in result arr for each crossing
+
   const gxTally = [];
 
   for (let i = 0; i < crossingsArr.length; i++) {
     const p = crossingsArr[i].attributes;
+
+    //implementing propertyName.toLowerCase().toTitleCase() here didn't work (too soon)
     gxTally.push({
       ObjectID: p.OBJECTID,
       gxid: p.CrossingID,
@@ -37,7 +43,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         gxTally[j].streetName2 = q.HIGHWAY;
         gxTally[j].station2 = q.STATION;
         gxTally[j].city2.push(q.CITY);
-        gxTally[j].county2 = q.COUNTY;
+        gxTally[j].county2 = q.COUNTY.toLowerCase().toTitleCase();
         gxTally[j].pubXing2 = q.PUBLIC;
         gxTally[j].incidentTot += 1;
         gxTally[j].injuryTot += q.TOTINJ;
@@ -46,7 +52,16 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
     }
     //prefer to use 'station1' from crossings file, bc that is what's used in Search widget, but if that's null, use 'station2' from incidents file.
     gxTally[j].station =
-      gxTally[j].station1 === null ? gxTally[j].station2 : gxTally[j].station1;
+      gxTally[j].station1 === null
+        ? gxTally[j].station2.toLowerCase().toTitleCase()
+        : gxTally[j].station1.toLowerCase().toTitleCase();
+
+    //wo 'if', tries to convert undefined value
+    if (gxTally[j].streetName1) {
+      gxTally[j].streetName = gxTally[j].streetName1
+        .toLowerCase()
+        .toTitleCase();
+    }
   }
 
   return gxTally;
@@ -66,7 +81,7 @@ export const createGXingItem = (gxSummArr) => {
   for (let i = 0; i < gxSummArr.length; i++) {
     let {
       gxid,
-      streetName1,
+      streetName,
       station,
       incidentTot,
       injuryTot,
@@ -105,7 +120,7 @@ export const createGXingItem = (gxSummArr) => {
           </div>
   
           <div class="item-detail">
-              <p><strong>Street name:</strong>  ${streetName1}</p>
+              <p><strong>Street name:</strong>  ${streetName}</p>
               <p><strong>In/near:</strong>  ${station}</p>
               <p><strong>Total collisions:</strong> ${incidentTot} &nbsp;| &nbsp; <strong>Injured:</strong> ${injuryTot} &nbsp;| &nbsp;<strong>Fatalities:</strong> ${fatalityTot}</p>
           </div>

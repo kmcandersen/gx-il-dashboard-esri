@@ -219,7 +219,11 @@ h1 {
 }
 
 .item-detail > p {
-  margin: 5px 0;
+  margin: 7px 0;
+}
+
+.item-detail > p:nth-child(3) {
+  line-height: 1.4em;
 }
 
 /* Priority Crossings List only */
@@ -266,7 +270,7 @@ h1 {
 
 .list-header-detail > p {
   font-size: 1rem;
-  margin: 5px 0;
+  margin: 7px 0;
 }
 
 .list-header-detail > p:first-child {

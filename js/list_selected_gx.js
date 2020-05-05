@@ -1,5 +1,8 @@
 import { typeVehicle, pubXing, trainType } from './category_helpers.js';
 
+//here, only needed to convert narrative to title case(other properties converted in gx_summary_funcs):
+import './to_title_case.js';
+
 //generates html for Incident List for selected crossing (header & list items)
 
 //for selected gx (click or search)
@@ -7,7 +10,7 @@ import { typeVehicle, pubXing, trainType } from './category_helpers.js';
 //loop thru incidents looking for matching gx, create an incident item
 export const createIncItem = (gxid, incByGxArr, incidentArr) => {
   let railroad1 = '',
-    streetName1 = '',
+    streetName = '',
     station = '',
     county2 = '',
     pubXing2 = '',
@@ -23,7 +26,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
   for (let i = 0; i < incByGxArr.length; i++) {
     if (gxid === incByGxArr[i].gxid) {
       railroad1 = incByGxArr[i].railroad1;
-      streetName1 = incByGxArr[i].streetName1;
+      streetName = incByGxArr[i].streetName;
       station = incByGxArr[i].station;
       county2 = incByGxArr[i].county2;
       pubXing2 = incByGxArr[i].pubXing2;
@@ -42,7 +45,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
       <h2 class="list-headline" id="for-zoom" data-gxid=${gxid} data-lat=${lat} data-long=${long}>Crossing No. ${gxid}<div class="esri-icon-zoom-in-magnifying-glass"></div></h2>
       <div class="list-header-detail">
         <p><strong>Railroad:</strong> ${railroad1}</p> 
-        <p><strong>Crossing:</strong> ${streetName1}</p>  
+        <p><strong>Crossing:</strong> ${streetName}</p>  
         <p><strong> Crossing Type:</strong> ${pubXing(pubXing2)}</p> 
         <p><strong>City:</strong> ${station} &nbsp;| &nbsp;<strong>County:</strong>
         ${county2}</p>
@@ -74,6 +77,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
       } = incidentArr[i].attributes;
 
       let date = new Date(DATE).toLocaleDateString();
+      narrative = narrative.toLowerCase().toTitleCase();
 
       htmlStringIncidents += `<div class="list-item">
           <div class="item-header">
