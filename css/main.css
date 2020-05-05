@@ -358,7 +358,7 @@ button:hover {
   }
 
   #list-panel {
-    width: calc(100vw);
+    width: 100vw;
     margin: 0;
     overflow: auto;
     height: auto;
@@ -368,24 +368,3 @@ button:hover {
     display: none;
   }
 }
-
-/* @media all and (min-width: 544px) {
-  .aside {
-    flex: 1 auto;
-  }
-}
-
-@media all and (min-width: 780px) {
-  .map {
-    flex: 4 0px;
-  }
-  .aside-right {
-    order: 2;
-  }
-  .map {
-    order: 1;
-  }
-  .aside-bottom {
-    order: 3;
-  }
-} */
