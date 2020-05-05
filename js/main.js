@@ -1,6 +1,6 @@
 import { countIncByGx, createGXingItem } from './gx_summary_funcs.js';
-
 import { createIncItem } from './list_selected_gx.js';
+import './to_title_case.js';
 
 require([
   'esri/Map',
@@ -389,7 +389,7 @@ require([
                   latitude: Latitude,
                   longitude: Longitude,
                 };
-                mapview.popup.title = `${Street}<br/>In/near: ${Station}`;
+                mapview.popup.title = `${Street.toLowerCase().toTitleCase()}<br/>In/near: ${Station.toLowerCase().toTitleCase()}`;
                 // Displays the popup (hidden by default)
 
                 mapview.popup.visible = true;
