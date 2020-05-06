@@ -352,10 +352,6 @@ button:hover {
     flex-direction: row;
   }
 
-  .title img {
-    display: block;
-  }
-
   .sub-title {
     display: none;
   }
