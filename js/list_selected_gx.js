@@ -12,7 +12,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
   let railroad1 = '',
     streetName = '',
     station = '',
-    county2 = '',
+    county = '',
     pubXing2 = '',
     lat = 0,
     long = 0,
@@ -26,9 +26,9 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
   for (let i = 0; i < incByGxArr.length; i++) {
     if (gxid === incByGxArr[i].gxid) {
       railroad1 = incByGxArr[i].railroad1;
-      streetName = incByGxArr[i].streetName;
-      station = incByGxArr[i].station;
-      county2 = incByGxArr[i].county2;
+      streetName = incByGxArr[i].streetName || 'NA';
+      station = incByGxArr[i].station || 'NA';
+      county = incByGxArr[i].county || 'NA';
       pubXing2 = incByGxArr[i].pubXing2;
       lat = incByGxArr[i].lat;
       long = incByGxArr[i].long;
@@ -48,7 +48,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
         <p><strong>Crossing:</strong> ${streetName}</p>  
         <p><strong> Crossing Type:</strong> ${pubXing(pubXing2)}</p> 
         <p><strong>City:</strong> ${station} &nbsp;| &nbsp;<strong>County:</strong>
-        ${county2}</p>
+        ${county}</p>
       </div>
       <p>${incidentTot} ${
     incidentTot === 1 ? 'collision' : 'collisions'

@@ -3,6 +3,8 @@
 //variable name + 1: from crossings geojson, variable name + 2: from incidents geojson
 
 import './to_title_case.js';
+import { counties } from './county_list.js';
+import { getCountyName } from './category_helpers.js';
 
 export const countIncByGx = (crossingsArr, incidentsArr) => {
   //loop thru crossings, create an obj in result arr for each crossing
@@ -23,7 +25,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
       station2: '',
       station: '',
       city2: [],
-      county2: '',
+      county1: p.CntyCd,
       pubXing2: '',
       incidentTot: 0,
       injuryTot: 0,
@@ -43,18 +45,12 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         gxTally[j].streetName2 = q.HIGHWAY;
         gxTally[j].station2 = q.STATION;
         gxTally[j].city2.push(q.CITY);
-        gxTally[j].county2 = q.COUNTY.toLowerCase().toTitleCase();
         gxTally[j].pubXing2 = q.PUBLIC;
         gxTally[j].incidentTot += 1;
         gxTally[j].injuryTot += q.TOTINJ;
         gxTally[j].fatalityTot += q.TOTKLD;
       }
     }
-    //prefer to use 'station1' from crossings file, bc that is what's used in Search widget, but if that's null, use 'station2' from incidents file.
-    gxTally[j].station =
-      gxTally[j].station1 === null
-        ? gxTally[j].station2.toLowerCase().toTitleCase()
-        : gxTally[j].station1.toLowerCase().toTitleCase();
 
     //wo 'if', tries to convert undefined value
     if (gxTally[j].streetName1) {
@@ -62,6 +58,14 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         .toLowerCase()
         .toTitleCase();
     }
+
+    //prefer to use 'station1' from crossings file, bc that is what's used in Search widget, but if that's null, use 'station2' from incidents file.
+    gxTally[j].station =
+      gxTally[j].station1 === null
+        ? gxTally[j].station2.toLowerCase().toTitleCase()
+        : gxTally[j].station1.toLowerCase().toTitleCase();
+
+    gxTally[j].county = getCountyName(counties, gxTally[j].county1);
   }
 
   return gxTally;

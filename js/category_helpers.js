@@ -54,3 +54,12 @@ export const trainType = (typeq) => {
       return 'Other';
   }
 };
+
+//convert CntyCD (FIPS County Code) in gx_incidents to County Name
+export const getCountyName = (arr, code) => {
+  for (let i = 0; i < arr.length; i++) {
+    for (let key in arr[i]) {
+      if (Number(key) === code) return arr[i][key];
+    }
+  }
+};

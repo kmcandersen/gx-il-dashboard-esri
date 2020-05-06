@@ -33,7 +33,6 @@ require([
       'PUBLIC',
       'DATE',
       'TIME',
-      'COUNTY',
       'STATION',
       'NARRATIVE',
       'TOTINJ',
@@ -74,6 +73,7 @@ require([
     outFields: [
       'OBJECTID',
       'CrossingID',
+      'CntyCD',
       'Street',
       'Station',
       'Latitude',
@@ -94,6 +94,10 @@ require([
       {
         name: 'Railroad',
         type: 'string',
+      },
+      {
+        name: 'CntyCd',
+        type: 'integer',
       },
       {
         name: 'Street',
@@ -379,17 +383,17 @@ require([
                 var Latitude = feature.attributes.Latitude;
                 var Longitude = feature.attributes.Longitude;
                 var Station = feature.attributes.Station
-                  ? feature.attributes.Station
+                  ? feature.attributes.Station.toLowerCase().toTitleCase()
                   : 'NA';
                 var Street = feature.attributes.Street
-                  ? feature.attributes.Street
+                  ? feature.attributes.Street.toLowerCase().toTitleCase()
                   : 'NA';
 
                 mapview.popup.location = {
                   latitude: Latitude,
                   longitude: Longitude,
                 };
-                mapview.popup.title = `${Street.toLowerCase().toTitleCase()}<br/>In/near: ${Station.toLowerCase().toTitleCase()}`;
+                mapview.popup.title = `${Street}<br/>In/near: ${Station}`;
                 // Displays the popup (hidden by default)
 
                 mapview.popup.visible = true;
