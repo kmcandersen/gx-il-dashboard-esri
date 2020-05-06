@@ -317,6 +317,7 @@ button:hover {
 @media all and (max-width: 850px) {
   .header {
     height: 90px;
+    justify-content: 'flex-start';
   }
 
   #mapview {
@@ -342,9 +343,17 @@ button:hover {
   }
 
   .header {
-    /* width: 100vw; */
+    width: 100vw;
     height: 120px;
     justify-content: flex-start;
+  }
+
+  .title {
+    flex-direction: row;
+  }
+
+  .title img {
+    display: block;
   }
 
   .sub-title {
