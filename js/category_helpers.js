@@ -8,19 +8,40 @@ export const typeVehicle = (typveh) => {
     case 'C':
     case 'D':
       return 'Truck';
-    case 'F':
-      return 'Bus';
-    case 'G':
-      return 'School bus';
-    case 'H':
-      return 'Motorcycle';
     case 'K':
     case 'Q':
       return 'Ped/Bicycle';
     default:
-      return '';
+      return 'Other';
   }
 };
+
+//calculates total collisions by vehicle type, for a crossing
+export const getVehCatTotGx = (obj, typVeh) => {
+  let typVehCat = typeVehicle(typVeh);
+  for (let key in obj.incByTypEq) {
+    if (key === typVehCat) {
+      obj.incByTypEq[key] += 1;
+    }
+  }
+};
+
+//calculates total collisions by vehicle type, for ALL crossings
+export const getVehCatTotAll = (arr) => {
+  let vehTypChartData = {};
+  for (let key in arr[0].incByTypEq) {
+    vehTypChartData[key] = 0;
+  }
+  for (let i = 0; i < arr.length; i++) {
+    for (let key in arr[i].incByTypEq) {
+      if (arr[i].incByTypEq[key] > 0) {
+        vehTypChartData[key] += 1;
+      }
+    }
+  }
+  return vehTypChartData;
+};
+
 //public or private crossing
 export const pubXing = (pub) => {
   switch (pub) {

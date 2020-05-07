@@ -1,10 +1,8 @@
 //run countIncByGx to create a new array, with an object for each crossing in IL, and a summary of characteristics and incidents (if applicable) at the crossing. This array is the data source for the incByCrossingLayer feature layer in main.js, and a definitionExpression limits visible points to the crossings with incidents.
 
-//variable name + 1: from crossings geojson, variable name + 2: from incidents geojson
-
 import './to_title_case.js';
-import { counties } from './county_list.js';
-import { getCountyName } from './category_helpers.js';
+import { counties } from '../data/county_list.js';
+import { getVehCatTotGx, getCountyName } from './category_helpers.js';
 
 export const countIncByGx = (crossingsArr, incidentsArr) => {
   //loop thru crossings, create an obj in result arr for each crossing
@@ -14,6 +12,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
   for (let i = 0; i < crossingsArr.length; i++) {
     const p = crossingsArr[i].attributes;
 
+    //property name + 1: from crossings geojson, variable name + 2: from incidents geojson
     //implementing propertyName.toLowerCase().toTitleCase() here didn't work (too soon)
     gxTally.push({
       ObjectID: p.OBJECTID,
@@ -30,6 +29,13 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
       incidentTot: 0,
       injuryTot: 0,
       fatalityTot: 0,
+      incByMonth: [],
+      incByTypEq: {
+        Auto: 0,
+        Truck: 0,
+        'Ped/Bicycle': 0,
+        Other: 0,
+      },
       lat: p.Latitude,
       long: p.Longitude,
     });
@@ -49,6 +55,8 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         gxTally[j].incidentTot += 1;
         gxTally[j].injuryTot += q.TOTINJ;
         gxTally[j].fatalityTot += q.TOTKLD;
+        gxTally[j].incByMonth.push(q.DATE);
+        getVehCatTotGx(gxTally[j], q.TYPVEH);
       }
     }
 
@@ -65,6 +73,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         ? gxTally[j].station2.toLowerCase().toTitleCase()
         : gxTally[j].station1.toLowerCase().toTitleCase();
 
+    //convert county Code to Name
     gxTally[j].county = getCountyName(counties, gxTally[j].county1);
   }
 

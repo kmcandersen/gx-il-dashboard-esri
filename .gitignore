@@ -7,13 +7,17 @@ main v4b.js
 main v5.js
 main v6.js
 main v7.js
+main v8.js
 index test.html
 index v1.html
 index old.html
+main v1.css
 search_functions.js
 gx_summary_funcs v1.js
 gx_summary_funcs v2.js
+gx_summary_funcs v3.js
 list_selected_gx v1.js
+chart_creators.js
 old-style.css
 .vscode
 rej_code.js

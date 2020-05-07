@@ -24,6 +24,7 @@
     <script type="text/javascript">
       document.getElementByClassName = 'js';
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
     <script type="text/javascript" src="https://js.arcgis.com/4.15/"></script>
   </head>
   <body>
@@ -50,6 +51,11 @@
           <div class="loading-spinner"></div>
         </div>
         <div id="list-panel"></div>
+      </div>
+      <div id="chart-row">
+        <div style="padding: 15px;">
+          <canvas id="vehTyp-chart"></canvas>
+        </div>
       </div>
     </div>
     <script type="module" src="./js/main.js"></script>

@@ -1,4 +1,5 @@
 import { countIncByGx, createGXingItem } from './gx_summary_funcs.js';
+import { getVehCatTotAll } from './category_helpers.js';
 import { createIncItem } from './list_selected_gx.js';
 import './to_title_case.js';
 
@@ -21,6 +22,8 @@ require([
   Home,
   Search
 ) {
+  const ctx = document.getElementById('vehTyp-chart').getContext('2d');
+
   //note: not visible; used as input to countIncByGx func
   let incidents = new GeoJSONLayer({
     title: 'incidents',
@@ -272,6 +275,32 @@ require([
   //formerly: scale: 24414
   var zoomScale = 15000;
 
+  const vehTypChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      // labels: vehTypes,
+      datasets: [
+        {
+          backgroundColor: ['#c6b29f', '#A6B6C2', '#A7A1AB', '#B0B6A5'],
+          borderColor: 'rgb(255, 255, 255)',
+          borderWidth: 0,
+          data: [0, 0, 0, 0],
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      legend: {
+        display: false,
+      },
+      title: {
+        display: true,
+        text: 'Collisions by Type',
+      },
+    },
+  });
+
   //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
@@ -301,7 +330,7 @@ require([
         .then((results) => {
           allCrossings = results.features;
           const incByGxArr = countIncByGx(allCrossings, allIncidents);
-
+          // console.log(incByGxArr);
           addFeatures(incByGxArr);
 
           //on load, populate the List of crossings with incidents
@@ -362,6 +391,7 @@ require([
                     }
                   });
                 fillIncidentList(gxid);
+                createVehTypChartSel(gxid);
               });
             });
           };
@@ -369,6 +399,29 @@ require([
             listItemEffects();
           }
           listItemHeaderEffects();
+
+          //Calculate overall total of Collisions by Type to populate Chart
+          const createVehTypChartAll = () => {
+            vehTypChart.data.labels = Object.keys(incByGxArr[0].incByTypEq);
+            vehTypChart.data.datasets[0].data = Object.values(
+              getVehCatTotAll(incByGxArr)
+            );
+            vehTypChart.update();
+          };
+          createVehTypChartAll();
+
+          //Get Collisions by Type for selected gx to populate Chart
+          const createVehTypChartSel = (gxid) => {
+            for (let i = 0; i < incByGxArr.length; i++) {
+              if (incByGxArr[i].gxid === gxid) {
+                vehTypChart.data.labels = Object.keys(incByGxArr[i].incByTypEq);
+                vehTypChart.data.datasets[0].data = Object.values(
+                  incByGxArr[i].incByTypEq
+                );
+              }
+            }
+            vehTypChart.update();
+          };
 
           //popup on mouseover
           mapview.on('pointer-move', (event) => {
@@ -440,6 +493,7 @@ require([
                 //diff than crossing ID in Search:
                 const selGxId = feature.attributes.CrossingID;
                 fillIncidentList(selGxId);
+                createVehTypChartSel(selGxId);
               }
             });
           });
@@ -459,6 +513,7 @@ require([
             const selGxId = event.result.feature.attributes.CrossingID;
 
             fillIncidentList(selGxId);
+            createVehTypChartSel(selGxId);
           });
 
           function addFeatures(arr) {
@@ -569,6 +624,7 @@ require([
               .insertAdjacentHTML('beforeend', gxListItem);
             listItemEffects();
             listItemHeaderEffects();
+            createVehTypChartAll();
           };
 
           const fillIncidentList = (selGxId) => {

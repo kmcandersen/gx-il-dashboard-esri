@@ -128,7 +128,7 @@ h1 {
 
 #mapview {
   width: 60vw;
-  height: calc(88vh - 10px);
+  height: calc(60vh - 10px);
   margin: 10px;
   border: 1px solid rgba(110, 110, 110, 0.3);
 }
@@ -142,7 +142,7 @@ h1 {
 
 #list-panel {
   width: calc(40vw - 30px);
-  height: calc(88vh - 10px);
+  height: calc(60vh - 10px);
   margin: 10px 10px 10px 0;
   border: 1px solid rgba(110, 110, 110, 0.3);
   overflow: scroll;
@@ -310,8 +310,11 @@ button:hover {
 
 /* Charts row */
 
-#chart-panel {
-  background: #333;
+#chart-row {
+  width: 40vw;
+  height: calc(28vh - 10px);
+  margin: 0 10px 10px 10px;
+  border: 1px solid rgba(110, 110, 110, 0.3);
 }
 
 @media all and (max-width: 850px) {
