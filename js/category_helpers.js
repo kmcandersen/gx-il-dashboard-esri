@@ -10,7 +10,7 @@ export const typeVehicle = (typveh) => {
       return 'Truck';
     case 'K':
     case 'Q':
-      return 'Ped/Bicycle';
+      return 'Ped/Bike';
     default:
       return 'Other';
   }

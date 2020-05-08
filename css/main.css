@@ -312,19 +312,20 @@ button:hover {
 
 #chart-row {
   display: flex;
-  height: calc(28vh - 10px);
+  justify-content: space-between;
+  /* height: calc(28vh - 10px); */
 }
 
 #timeline-chart {
-  width: 60vw;
-  height: 100%;
+  /* width: 60vw; */
+  /* height: 100%; */
   margin: 0 10px 10px 10px;
   border: 1px solid rgba(110, 110, 110, 0.3);
 }
 
 #vehtyp-chart {
-  width: calc(43vw - 10px);
-  height: 100%;
+  /* width: calc(43vw - 10px); */
+  /* height: 100%; */
   margin: 0 10px 10px 0;
   border: 1px solid rgba(110, 110, 110, 0.3);
 }

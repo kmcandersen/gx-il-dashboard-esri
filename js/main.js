@@ -1,8 +1,11 @@
 import { countIncByGx, createGXingItem } from './gx_summary_funcs.js';
 import {
+  timeChartProperties,
+  vehTypChartProperties,
   getVehCatTotAll,
   countIncByYearMo,
   colorBarsByYear,
+  countIncByYear,
 } from './chart_helpers.js';
 import { createIncItem } from './list_selected_gx.js';
 import './to_title_case.js';
@@ -281,58 +284,6 @@ require([
   //formerly: scale: 24414
   var zoomScale = 15000;
 
-  const monthCountChart = new Chart(ctx1, {
-    type: 'bar',
-    data: {
-      // labels: '',
-      datasets: [
-        {
-          backgroundColor: colorBarsByYear(),
-          borderColor: 'rgb(255, 255, 255)',
-          borderWidth: 0,
-          data: '',
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            legend: {
-              display: false,
-            },
-            title: {
-              display: true,
-              text: 'Collisions by Month',
-            },
-          },
-        },
-      ],
-    },
-  });
-
-  const vehTypChart = new Chart(ctx2, {
-    type: 'bar',
-    data: {
-      // labels: vehTypes,
-      datasets: [
-        {
-          backgroundColor: ['#c6b29f', '#A6B6C2', '#A7A1AB', '#B0B6A5'],
-          borderColor: 'rgb(255, 255, 255)',
-          borderWidth: 0,
-          data: [0, 0, 0, 0],
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      legend: {
-        display: false,
-      },
-      title: {
-        display: true,
-        text: 'Collisions by Type',
-      },
-    },
-  });
-
   //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
@@ -424,6 +375,9 @@ require([
                   });
                 fillIncidentList(gxid);
                 createVehTypChartSel(gxid);
+                //Calculate Collisions by Year for selected gx to populate Chart
+                const incByYear = countIncByYear(incByGxArr, gxid, 2015, 2019);
+                createIncByYearSel(incByYear);
               });
             });
           };
@@ -432,6 +386,7 @@ require([
           }
           listItemHeaderEffects();
 
+          const vehTypChart = new Chart(ctx2, vehTypChartProperties);
           //Calculate overall total of Collisions by Type to populate Chart
           const createVehTypChartAll = () => {
             vehTypChart.data.labels = Object.keys(incByGxArr[0].incByTypEq);
@@ -450,15 +405,38 @@ require([
                 vehTypChart.data.datasets[0].data = Object.values(
                   incByGxArr[i].incByTypEq
                 );
+                vehTypChart.update();
               }
             }
           };
 
-          //Calculate overall total of Collisions for each Month-Year in range to populate Chart
+          const timeCountChart = new Chart(ctx1, timeChartProperties);
+
           const incByYearMo = countIncByYearMo(allIncidents, 2015, 2019);
-          monthCountChart.data.labels = Object.keys(incByYearMo);
-          monthCountChart.data.datasets[0].data = Object.values(incByYearMo);
-          monthCountChart.update();
+          //Populate collisions over time Chart for selected gx (by year), using incByYear arr calculated when gx selected
+          const createIncByMonthAll = (incByYearMo) => {
+            timeCountChart.data.datasets[0].backgroundColor = colorBarsByYear();
+            timeCountChart.options.title.text = 'Collisions by Month';
+            timeCountChart.data.labels = Object.keys(incByYearMo);
+            timeCountChart.data.datasets[0].data = Object.values(incByYearMo);
+            timeCountChart.update();
+          };
+          createIncByMonthAll(incByYearMo);
+
+          //Populate collisions over time Chart for selected gx (by year), using incByYear arr calculated when gx selected
+          const createIncByYearSel = (incByYear) => {
+            timeCountChart.data.labels = Object.keys(incByYear);
+            timeCountChart.data.datasets[0].data = Object.values(incByYear);
+            timeCountChart.data.datasets[0].backgroundColor = [
+              '#c6b29f',
+              '#A6B6C2',
+              '#A7A1AB',
+              '#B0B6A5',
+              '#d4b1ad',
+            ];
+            timeCountChart.options.title.text = 'Collisions by Year';
+            timeCountChart.update();
+          };
 
           //popup on mouseover
           mapview.on('pointer-move', (event) => {
@@ -531,6 +509,13 @@ require([
                 const selGxId = feature.attributes.CrossingID;
                 fillIncidentList(selGxId);
                 createVehTypChartSel(selGxId);
+                const incByYear = countIncByYear(
+                  incByGxArr,
+                  selGxId,
+                  2015,
+                  2019
+                );
+                createIncByYearSel(incByYear);
               }
             });
           });
@@ -551,6 +536,8 @@ require([
 
             fillIncidentList(selGxId);
             createVehTypChartSel(selGxId);
+            const incByYear = countIncByYear(incByGxArr, selGxId, 2015, 2019);
+            createIncByYearSel(incByYear);
           });
 
           function addFeatures(arr) {
@@ -661,6 +648,7 @@ require([
               .insertAdjacentHTML('beforeend', gxListItem);
             listItemEffects();
             listItemHeaderEffects();
+            createIncByMonthAll(incByYearMo);
             createVehTypChartAll();
           };
 

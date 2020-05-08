@@ -30,11 +30,11 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
       incidentTot: 0,
       injuryTot: 0,
       fatalityTot: 0,
-      incByMonth: [],
+      incTimestamps: [],
       incByTypEq: {
         Auto: 0,
         Truck: 0,
-        'Ped/Bicycle': 0,
+        'Ped/Bike': 0,
         Other: 0,
       },
       lat: p.Latitude,
@@ -65,7 +65,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         // if (month < 10) {
         //   month = `0${month}`;
         // }
-        gxTally[j].incByMonth.push(q.DATE);
+        gxTally[j].incTimestamps.push(q.DATE);
         getVehCatTotGx(gxTally[j], q.TYPVEH);
       }
     }
@@ -87,7 +87,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
     gxTally[j].county = getCountyName(counties, gxTally[j].county1);
 
     // if (gxTally[j].incidentTot > 0) {
-    //   console.log(gxTally[j].incByMonth);
+    //   console.log(gxTally[j].incTimestamps);
     // }
   }
   return gxTally;
