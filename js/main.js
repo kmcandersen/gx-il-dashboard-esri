@@ -1,5 +1,9 @@
 import { countIncByGx, createGXingItem } from './gx_summary_funcs.js';
-import { getVehCatTotAll } from './category_helpers.js';
+import {
+  getVehCatTotAll,
+  countIncByYearMo,
+  colorBarsByYear,
+} from './chart_helpers.js';
 import { createIncItem } from './list_selected_gx.js';
 import './to_title_case.js';
 
@@ -22,7 +26,9 @@ require([
   Home,
   Search
 ) {
-  const ctx = document.getElementById('vehTyp-chart').getContext('2d');
+  const ctx1 = document.getElementById('timeline-chart').getContext('2d');
+
+  const ctx2 = document.getElementById('vehtyp-chart').getContext('2d');
 
   //note: not visible; used as input to countIncByGx func
   let incidents = new GeoJSONLayer({
@@ -275,7 +281,33 @@ require([
   //formerly: scale: 24414
   var zoomScale = 15000;
 
-  const vehTypChart = new Chart(ctx, {
+  const monthCountChart = new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      // labels: '',
+      datasets: [
+        {
+          backgroundColor: colorBarsByYear(),
+          borderColor: 'rgb(255, 255, 255)',
+          borderWidth: 0,
+          data: '',
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            legend: {
+              display: false,
+            },
+            title: {
+              display: true,
+              text: 'Collisions by Month',
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  const vehTypChart = new Chart(ctx2, {
     type: 'bar',
     data: {
       // labels: vehTypes,
@@ -420,13 +452,18 @@ require([
                 );
               }
             }
-            vehTypChart.update();
           };
+
+          //Calculate overall total of Collisions for each Month-Year in range to populate Chart
+          const incByYearMo = countIncByYearMo(allIncidents, 2015, 2019);
+          monthCountChart.data.labels = Object.keys(incByYearMo);
+          monthCountChart.data.datasets[0].data = Object.values(incByYearMo);
+          monthCountChart.update();
 
           //popup on mouseover
           mapview.on('pointer-move', (event) => {
             mapview.hitTest(event).then((response) => {
-              //**response ALWAYS has a length bc pointer on basemap returns a result */
+              //**response length ALWAYS > 0 bc pointer on basemap returns a result */
 
               if (response.results.length > 1 && viewportWidth > 680) {
                 const feature = response.results.filter(function (result) {

@@ -2,7 +2,8 @@
 
 import './to_title_case.js';
 import { counties } from '../data/county_list.js';
-import { getVehCatTotGx, getCountyName } from './category_helpers.js';
+import { getCountyName } from './category_helpers.js';
+import { getVehCatTotGx } from './chart_helpers.js';
 
 export const countIncByGx = (crossingsArr, incidentsArr) => {
   //loop thru crossings, create an obj in result arr for each crossing
@@ -55,6 +56,15 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         gxTally[j].incidentTot += 1;
         gxTally[j].injuryTot += q.TOTINJ;
         gxTally[j].fatalityTot += q.TOTKLD;
+
+        //DO CONVERSION LATER
+        // const timestamp = q.DATE;
+        // const date = new Date(timestamp);
+        // const year = date.getFullYear();
+        // let month = date.getMonth() + 1;
+        // if (month < 10) {
+        //   month = `0${month}`;
+        // }
         gxTally[j].incByMonth.push(q.DATE);
         getVehCatTotGx(gxTally[j], q.TYPVEH);
       }
@@ -75,8 +85,11 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
 
     //convert county Code to Name
     gxTally[j].county = getCountyName(counties, gxTally[j].county1);
-  }
 
+    // if (gxTally[j].incidentTot > 0) {
+    //   console.log(gxTally[j].incByMonth);
+    // }
+  }
   return gxTally;
 };
 
