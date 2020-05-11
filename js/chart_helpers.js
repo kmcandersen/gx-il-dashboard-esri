@@ -1,6 +1,6 @@
 import { typeVehicle } from './category_helpers.js';
 
-//time Chart properties for constructor
+//timeChartProperties for Chart constructor
 export const timeChartProperties = {
   type: 'bar',
   data: {
@@ -23,6 +23,15 @@ export const timeChartProperties = {
       display: true,
       fontFamily: 'Avenir Next W00',
     },
+    tooltips: {
+      displayColors: false,
+      callbacks: {
+        label: (tooltipItems, data) => {
+          let value = data.datasets[0].data[tooltipItems.index];
+          return `${value} ${value === 1 ? 'collision' : 'collisions'}`;
+        },
+      },
+    },
     scales: {
       xAxes: [
         {
@@ -31,13 +40,27 @@ export const timeChartProperties = {
             maxRotation: 0,
             minRotation: 0,
           },
+          gridLines: {
+            display: false,
+          },
+        },
+      ],
+      yAxes: [
+        {
+          ticks: {
+            min: 0,
+            padding: 8,
+          },
+          gridLines: {
+            drawTicks: false,
+          },
         },
       ],
     },
   },
 };
 
-//vehicle type Chart properties for constructor
+//vehTypChartProperties for Chart constructor
 export const vehTypChartProperties = {
   type: 'bar',
   data: {
@@ -62,6 +85,15 @@ export const vehTypChartProperties = {
       text: 'Collisions by Type',
       fontFamily: 'Avenir Next W00',
     },
+    tooltips: {
+      displayColors: false,
+      callbacks: {
+        label: (tooltipItems, data) => {
+          let value = data.datasets[0].data[tooltipItems.index];
+          return `${value} ${value === 1 ? 'collision' : 'collisions'}`;
+        },
+      },
+    },
     scales: {
       xAxes: [
         {
@@ -69,6 +101,20 @@ export const vehTypChartProperties = {
             autoSkip: false,
             maxRotation: 0,
             minRotation: 0,
+          },
+          gridLines: {
+            display: false,
+          },
+        },
+      ],
+      yAxes: [
+        {
+          ticks: {
+            min: 0,
+            padding: 8,
+          },
+          gridLines: {
+            drawTicks: false,
           },
         },
       ],
@@ -102,6 +148,7 @@ export const getVehCatTotAll = (arr) => {
   return vehTypChartData;
 };
 
+//compile data for timeCountChart - year (selected gx)
 //arr = incByGxArr
 export const countIncByYear = (arr, gxid, start, end) => {
   const incByYearTally = {};
@@ -120,6 +167,8 @@ export const countIncByYear = (arr, gxid, start, end) => {
   return incByYearTally;
 };
 
+//compile data for timeCountChart - month (all gx)
+//arr = allIncidents
 export const countIncByYearMo = (arr, start, end) => {
   //create the obj to hold the count; obj has a key for each month within the start & end years
   const incByMonthTally = {};
@@ -147,7 +196,7 @@ export const countIncByYearMo = (arr, start, end) => {
   return incByMonthTally;
 };
 
-//year bars in monthCountChart grouped by color (1 for ea of 4 years)
+//year bars in timeCountChart - month grouped by color (1 for ea of 4 years)
 export const colorBarsByYear = () => {
   const colors = ['#c6b29f', '#A6B6C2', '#A7A1AB', '#B0B6A5', '#d4b1ad'];
   const result = [];
@@ -155,6 +204,43 @@ export const colorBarsByYear = () => {
     for (let j = 0; j < 12; j++) {
       result.push(colors[i]);
     }
+  }
+  return result;
+};
+
+//show 1 label per year, for timeCountChart - month
+export const labelsByYear = (start, end) => {
+  const labels = [];
+  const years = [];
+  const labelIdx = [];
+  //create list of years in the range to use as a 2nd loop
+  for (var i = start; i <= end; i++) {
+    years.push(i);
+  }
+  //create list of indices that will hold a year
+  //labelIdx = {1,13,25,37,49} so label is aligned with Feb, roughly the start of the year; let j = 0: label aligned with Jan
+  for (let j = 1; j < years.length * 12; j += 12) {
+    labelIdx.push(j);
+  }
+  for (let k = 0; k < years.length * 12; k++) {
+    if (labelIdx.includes(k)) {
+      //push the year at that same idx in years:
+      //get the index of labelIdx where the matching # found
+      let yearLabelIdx = labelIdx.indexOf(k);
+      labels.push(String(years[yearLabelIdx]));
+    } else {
+      labels.push('');
+    }
+  }
+  return labels;
+};
+
+export const formatMoYearKeys = (arr) => {
+  let result = [];
+  for (let i = 0; i < arr.length; i++) {
+    let year = arr[i].slice(0, 4);
+    let month = arr[i][4] === '0' ? arr[i].slice(5) : arr[i].slice(4);
+    result.push(`${month}/${year}`);
   }
   return result;
 };

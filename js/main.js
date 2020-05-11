@@ -6,6 +6,8 @@ import {
   countIncByYearMo,
   colorBarsByYear,
   countIncByYear,
+  labelsByYear,
+  formatMoYearKeys,
 } from './chart_helpers.js';
 import { createIncItem } from './list_selected_gx.js';
 import './to_title_case.js';
@@ -389,6 +391,7 @@ require([
           const vehTypChart = new Chart(ctx2, vehTypChartProperties);
           //Calculate overall total of Collisions by Type to populate Chart
           const createVehTypChartAll = () => {
+            vehTypChart.options.scales.yAxes[0].ticks.stepSize = 50;
             vehTypChart.data.labels = Object.keys(incByGxArr[0].incByTypEq);
             vehTypChart.data.datasets[0].data = Object.values(
               getVehCatTotAll(incByGxArr)
@@ -401,6 +404,7 @@ require([
           const createVehTypChartSel = (gxid) => {
             for (let i = 0; i < incByGxArr.length; i++) {
               if (incByGxArr[i].gxid === gxid) {
+                vehTypChart.options.scales.yAxes[0].ticks.stepSize = 1;
                 vehTypChart.data.labels = Object.keys(incByGxArr[i].incByTypEq);
                 vehTypChart.data.datasets[0].data = Object.values(
                   incByGxArr[i].incByTypEq
@@ -414,18 +418,44 @@ require([
 
           const incByYearMo = countIncByYearMo(allIncidents, 2015, 2019);
           //Populate collisions over time Chart for selected gx (by year), using incByYear arr calculated when gx selected
+          //Nov & Dec 2019 not displayed, bc no data for these months
           const createIncByMonthAll = (incByYearMo) => {
             timeCountChart.data.datasets[0].backgroundColor = colorBarsByYear();
             timeCountChart.options.title.text = 'Collisions by Month';
-            timeCountChart.data.labels = Object.keys(incByYearMo);
-            timeCountChart.data.datasets[0].data = Object.values(incByYearMo);
+            timeCountChart.data.labels = labelsByYear(2015, 2019).slice(0, -2);
+            timeCountChart.data.datasets[0].data = Object.values(
+              incByYearMo
+            ).slice(0, -2);
+            timeCountChart.options.scales.yAxes[0].ticks.stepSize = 4;
+
+            //func for custom tooltip title, since x labels (normal tooltip source) display either year or ''
+            //wo this, title for Jan tooltips = year:
+            const moYearKeys = Object.keys(incByYearMo).slice(0, -2);
+            const tooltipKeys = formatMoYearKeys(moYearKeys);
+            timeCountChart.options.tooltips.callbacks.title = function (
+              tooltipItems,
+              data
+            ) {
+              return `${tooltipKeys[tooltipItems[0].index]}`;
+            };
+
             timeCountChart.update();
           };
+          // console.log(timeCountChart.data.datasets[0].data);
           createIncByMonthAll(incByYearMo);
 
           //Populate collisions over time Chart for selected gx (by year), using incByYear arr calculated when gx selected
           const createIncByYearSel = (incByYear) => {
             timeCountChart.data.labels = Object.keys(incByYear);
+            const tooltipKeys = Object.keys(incByYear);
+            //tooltip title from createIncByMonthAll will still apply if not replaced
+            timeCountChart.options.tooltips.callbacks.title = function (
+              tooltipItems,
+              data
+            ) {
+              return `${tooltipKeys[tooltipItems[0].index]}`;
+            };
+
             timeCountChart.data.datasets[0].data = Object.values(incByYear);
             timeCountChart.data.datasets[0].backgroundColor = [
               '#c6b29f',
@@ -434,6 +464,7 @@ require([
               '#B0B6A5',
               '#d4b1ad',
             ];
+            timeCountChart.options.scales.yAxes[0].ticks.stepSize = 1;
             timeCountChart.options.title.text = 'Collisions by Year';
             timeCountChart.update();
           };
