@@ -32,15 +32,17 @@
       <header class="header">
         <div class="title-group">
           <div class="title">
-            <img src="assets/gx-sign.svg" />
+            <img src="assets/gx-sign-blue.svg" />
             <h1>
               Illinois Highway-Rail Grade Crossing Collisions, 2015-2019
             </h1>
           </div>
           <h5 class="sub-title">
             Source:
-            <a href="https://safetydata.fra.dot.gov/"
-              >Federal Railroad Administration</a
+            <span class="sub-title-link"
+              ><a href="https://safetydata.fra.dot.gov/"
+                >Federal Railroad Administration</a
+              ></span
             >
           </h5>
         </div>
@@ -53,10 +55,10 @@
         <div id="list-panel"></div>
       </div>
       <div id="chart-row">
-        <div style="width: 65vw; height: calc(28vh - 10px);">
+        <div class="timeline-wrapper">
           <canvas id="timeline-chart"></canvas>
         </div>
-        <div style="width: 28vw; height: calc(28vh - 10px);">
+        <div class="vehtyp-wrapper">
           <canvas id="vehtyp-chart"></canvas>
         </div>
       </div>

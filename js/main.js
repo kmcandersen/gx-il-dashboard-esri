@@ -35,6 +35,8 @@ require([
 
   const ctx2 = document.getElementById('vehtyp-chart').getContext('2d');
 
+  Chart.defaults.global.defaultFontFamily = 'Avenir Next W00';
+
   //note: not visible; used as input to countIncByGx func
   let incidents = new GeoJSONLayer({
     title: 'incidents',
@@ -170,7 +172,7 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: 'orange',
+      color: '#E4AF2A',
       outline: null,
       size: 4,
     },
@@ -180,9 +182,9 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: 'orange',
+      color: '#E4AF2A',
       outline: {
-        color: '#d17e21',
+        color: '#C6910C',
         width: 0.5,
       },
       size: 8,
@@ -249,11 +251,11 @@ require([
     definitionExpression: 'incidentTot > 0',
   });
 
-  var homeBtn = new Home({
+  const homeBtn = new Home({
     view: mapview,
   });
 
-  var searchWidget = new Search({
+  const searchWidget = new Search({
     view: mapview,
     container: 'search-container',
     includeDefaultSources: false,
@@ -278,32 +280,33 @@ require([
   // Adds home button
   mapview.ui.add(homeBtn, 'top-left');
 
-  var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-  var homeScale = viewportWidth > 680 ? 3750000 : 8000000;
-  var homeCenter = viewportWidth > 680 ? [-89.5, 40.4] : [-89.5, 40.0];
+  const viewportWidth =
+    window.innerWidth || document.documentElement.clientWidth;
+  let homeScale = viewportWidth > 650 ? 3750000 : 8000000;
+  let homeCenter = viewportWidth > 650 ? [-89.5, 41.1] : [-89.5, 40.2];
   mapview.scale = homeScale;
   mapview.center = homeCenter;
   //formerly: scale: 24414
-  var zoomScale = 15000;
+  let zoomScale = 15000;
 
   //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
-  mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
+  mapview.whenLayerView(crossings).then((layerViewCrossings) => {
     document.querySelector('.esri-search__input').onfocusout = null;
 
     let spinner = document.querySelector('.loading-spinner');
     // Hide the loading indicator when the view stops updating
-    watchUtils.whenFalseOnce(mapview, 'updating', function (event) {
+    watchUtils.whenFalseOnce(mapview, 'updating', (event) => {
       spinner.remove();
     });
     var allIncidents, allCrossings, highlight;
 
-    mapview.watch('scale', function (newValue) {
+    mapview.watch('scale', (newValue) => {
       crossings.renderer = newValue <= 187500 ? largeGxPoints : smallGxPoints;
     });
 
-    mapview.watch('scale', function (newValue) {
+    mapview.watch('scale', (newValue) => {
       incByCrossingLayer.renderer =
         newValue <= 187500 ? largeGxIncPoints : smallGxIncPoints;
     });
@@ -333,11 +336,11 @@ require([
               item.addEventListener('mouseover', (event) => {
                 item.classList.add('list-item-highlight');
                 //
-                var query = crossings.createQuery();
-                var queryString =
+                let query = crossings.createQuery();
+                let queryString =
                   'CrossingID = ' + "'" + item.dataset.gxid + "'";
                 query.where = queryString;
-                crossings.queryFeatures(query).then(function (result) {
+                crossings.queryFeatures(query).then((result) => {
                   if (highlight) {
                     highlight.remove();
                   }
@@ -396,6 +399,7 @@ require([
             vehTypChart.data.datasets[0].data = Object.values(
               getVehCatTotAll(incByGxArr)
             );
+            vehTypChart.options.title.text = 'Vehicle Type | All Crossings';
             vehTypChart.update();
           };
           createVehTypChartAll();
@@ -409,6 +413,8 @@ require([
                 vehTypChart.data.datasets[0].data = Object.values(
                   incByGxArr[i].incByTypEq
                 );
+                vehTypChart.options.title.text =
+                  'Vehicle Type | Selected Crossing';
                 vehTypChart.update();
               }
             }
@@ -421,7 +427,8 @@ require([
           //Nov & Dec 2019 not displayed, bc no data for these months
           const createIncByMonthAll = (incByYearMo) => {
             timeCountChart.data.datasets[0].backgroundColor = colorBarsByYear();
-            timeCountChart.options.title.text = 'Collisions by Month';
+            timeCountChart.options.title.text =
+              'Collisions by Month | All Crossings';
             timeCountChart.data.labels = labelsByYear(2015, 2019).slice(0, -2);
             timeCountChart.data.datasets[0].data = Object.values(
               incByYearMo
@@ -432,10 +439,10 @@ require([
             //wo this, title for Jan tooltips = year:
             const moYearKeys = Object.keys(incByYearMo).slice(0, -2);
             const tooltipKeys = formatMoYearKeys(moYearKeys);
-            timeCountChart.options.tooltips.callbacks.title = function (
+            timeCountChart.options.tooltips.callbacks.title = (
               tooltipItems,
               data
-            ) {
+            ) => {
               return `${tooltipKeys[tooltipItems[0].index]}`;
             };
 
@@ -449,10 +456,10 @@ require([
             timeCountChart.data.labels = Object.keys(incByYear);
             const tooltipKeys = Object.keys(incByYear);
             //tooltip title from createIncByMonthAll will still apply if not replaced
-            timeCountChart.options.tooltips.callbacks.title = function (
+            timeCountChart.options.tooltips.callbacks.title = (
               tooltipItems,
               data
-            ) {
+            ) => {
               return `${tooltipKeys[tooltipItems[0].index]}`;
             };
 
@@ -465,7 +472,8 @@ require([
               '#d4b1ad',
             ];
             timeCountChart.options.scales.yAxes[0].ticks.stepSize = 1;
-            timeCountChart.options.title.text = 'Collisions by Year';
+            timeCountChart.options.title.text =
+              'Collisions by Year | Selected Crossing';
             timeCountChart.update();
           };
 
@@ -475,16 +483,16 @@ require([
               //**response length ALWAYS > 0 bc pointer on basemap returns a result */
 
               if (response.results.length > 1 && viewportWidth > 680) {
-                const feature = response.results.filter(function (result) {
+                const feature = response.results.filter((result) => {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
 
-                var Latitude = feature.attributes.Latitude;
-                var Longitude = feature.attributes.Longitude;
-                var Station = feature.attributes.Station
+                let Latitude = feature.attributes.Latitude;
+                let Longitude = feature.attributes.Longitude;
+                let Station = feature.attributes.Station
                   ? feature.attributes.Station.toLowerCase().toTitleCase()
                   : 'NA';
-                var Street = feature.attributes.Street
+                let Street = feature.attributes.Street
                   ? feature.attributes.Street.toLowerCase().toTitleCase()
                   : 'NA';
 
@@ -515,7 +523,7 @@ require([
 
             mapview.hitTest(event).then((response) => {
               if (response.results.length > 1) {
-                var feature = response.results.filter((result) => {
+                let feature = response.results.filter((result) => {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
 
@@ -552,7 +560,7 @@ require([
           });
 
           //selection via Search:
-          searchWidget.on('select-result', function (event) {
+          searchWidget.on('select-result', (event) => {
             mapview.goTo({
               scale: zoomScale,
             });
@@ -575,7 +583,7 @@ require([
             // create an array of graphics based on the data above
             var graphics = [];
             var graphic;
-            for (var i = 0; i < arr.length; i++) {
+            for (let i = 0; i < arr.length; i++) {
               graphic = new Graphic({
                 geometry: {
                   type: 'point',
@@ -603,8 +611,8 @@ require([
                 // if features were added - call queryFeatures to return
                 //newly added graphics
                 if (results.addFeatureResults.length > 0) {
-                  var objectIds = [];
-                  results.addFeatureResults.forEach(function (item) {
+                  let objectIds = [];
+                  results.addFeatureResults.forEach((item) => {
                     objectIds.push(item.objectId);
                   });
                   // query the newly added features from the layer
@@ -627,10 +635,10 @@ require([
             }
             const item = document.getElementById('for-zoom');
 
-            var query = crossings.createQuery();
-            var queryString = 'CrossingID = ' + "'" + item.dataset.gxid + "'";
+            let query = crossings.createQuery();
+            let queryString = 'CrossingID = ' + "'" + item.dataset.gxid + "'";
             query.where = queryString;
-            crossings.queryFeatures(query).then(function (result) {
+            crossings.queryFeatures(query).then((result) => {
               if (highlight) {
                 highlight.remove();
               }

@@ -4,7 +4,8 @@
 }
 
 :focus {
-  outline: 2px solid #909090;
+  /* outline: 2px solid #909090; */
+  outline: 2px solid #005e95;
 }
 
 html,
@@ -54,8 +55,11 @@ body {
 /* Title bar */
 
 .header {
-  background: #ccc;
-  border: 1px solid #a9a9a9;
+  /* background: #ccc;
+  border: 1px solid #a9a9a9; */
+  background: #005e95;
+  border: 1px solid #00457c;
+  color: white;
   padding: 15px 10px;
   display: flex;
   justify-content: space-between;
@@ -103,11 +107,18 @@ h1 {
 
 .sub-title a {
   text-decoration: none;
-  color: #4c4c4c;
+  /* color: #4c4c4c; */
+  color: white;
 }
 
-.sub-title a:hover {
-  text-decoration: underline;
+.sub-title-link {
+  transition: 500ms;
+  border-bottom: 1px solid transparent;
+}
+
+.sub-title-link:hover {
+  /* border-color: #4c4c4c; */
+  border-color: white;
 }
 
 #search-container {
@@ -159,12 +170,11 @@ h1 {
 
 .list-headline {
   font-size: 1.1em;
-  /* color: #FFA500; */
   margin: 14px 0 0 0;
 }
 
 .collision-sym {
-  color: #ffa500;
+  color: #e4af2a;
   font-size: 1.3rem;
 }
 
@@ -188,6 +198,9 @@ h1 {
   padding: 0px;
   margin: 5px 0px;
   cursor: pointer;
+  display: inline;
+  transition: 500ms;
+  border-bottom: 1px solid transparent;
 }
 
 .item-headline a {
@@ -196,8 +209,7 @@ h1 {
 }
 
 .item-headline:hover {
-  /* color: #005e95; */
-  text-decoration: underline;
+  border-color: #0079c1;
 }
 
 .list-item {
@@ -208,10 +220,6 @@ h1 {
   border: 1px solid rgba(110, 110, 110, 0.3);
   border-color: transparent;
   border-radius: 2px;
-  /* display: block; */
-  /* display: flex;
-  flex-direction: column;
-  justify-content: space-around; */
 }
 
 .list-item-highlight {
@@ -291,6 +299,7 @@ button {
   color: white;
   font-size: 14px;
   font-family: 'Avenir Next W00';
+  transition: background-color 1s ease;
 }
 
 button:hover {
@@ -313,20 +322,28 @@ button:hover {
 #chart-row {
   display: flex;
   justify-content: space-between;
+  padding: 0 10px;
   /* height: calc(28vh - 10px); */
 }
 
-#timeline-chart {
-  /* width: 60vw; */
-  /* height: 100%; */
-  margin: 0 10px 10px 10px;
-  border: 1px solid rgba(110, 110, 110, 0.3);
+.timeline-wrapper {
+  /* width: 65vw; */
+  height: calc(28vh - 10px);
+  flex-grow: 2;
+  margin-right: 10px;
 }
 
+.vehtyp-wrapper {
+  /* width: 28vw; */
+  height: calc(28vh - 10px);
+}
+
+#timeline-chart,
 #vehtyp-chart {
-  /* width: calc(43vw - 10px); */
+  /* width: 60vw; */
   /* height: 100%; */
-  margin: 0 10px 10px 0;
+  /* margin: 0 10px 10px 10px; */
+  padding: 0 10px;
   border: 1px solid rgba(110, 110, 110, 0.3);
 }
 
@@ -349,6 +366,21 @@ button:hover {
   }
   .title {
     flex-direction: column;
+  }
+
+  #chart-row {
+    flex-direction: column;
+    width: auto;
+  }
+
+  .timeline-wrapper,
+  .vehtyp-wrapper {
+    margin: 14px 10px;
+  }
+
+  #timeline-chart,
+  #vehtyp-chart {
+    padding: 5px 10px;
   }
 }
 

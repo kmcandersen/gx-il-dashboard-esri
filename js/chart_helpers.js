@@ -21,7 +21,9 @@ export const timeChartProperties = {
     },
     title: {
       display: true,
-      fontFamily: 'Avenir Next W00',
+      fontSize: 16,
+      fontColor: '#4c4c4c',
+      //   fontStyle: 'normal',
     },
     tooltips: {
       displayColors: false,
@@ -82,8 +84,9 @@ export const vehTypChartProperties = {
     },
     title: {
       display: true,
-      text: 'Collisions by Type',
-      fontFamily: 'Avenir Next W00',
+      fontColor: '#4c4c4c',
+      fontSize: 16,
+      //   fontStyle: 'normal',
     },
     tooltips: {
       displayColors: false,
@@ -214,7 +217,7 @@ export const labelsByYear = (start, end) => {
   const years = [];
   const labelIdx = [];
   //create list of years in the range to use as a 2nd loop
-  for (var i = start; i <= end; i++) {
+  for (let i = start; i <= end; i++) {
     years.push(i);
   }
   //create list of indices that will hold a year
