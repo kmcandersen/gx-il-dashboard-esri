@@ -1,10 +1,8 @@
 * {
-  /* border: 1px solid red; */
   box-sizing: border-box;
 }
 
 :focus {
-  /* outline: 2px solid #909090; */
   outline: 2px solid #005e95;
 }
 
@@ -41,22 +39,17 @@ body {
 }
 
 .wrapper {
-  /* flex-flow: row wrap; */
   width: 100%;
   height: 100%;
 }
 
 .wrapper > * {
-  /* padding: 10px; */
-  /* flex: 1 100%; */
   color: #4c4c4c;
 }
 
 /* Title bar */
 
 .header {
-  /* background: #ccc;
-  border: 1px solid #a9a9a9; */
   background: #005e95;
   border: 1px solid #00457c;
   color: white;
@@ -74,13 +67,7 @@ body {
 
 .title {
   display: flex;
-  /* flex-direction: row;
-  align-items: center; */
 }
-
-/* .title-years {
-  display: inline-block;
-} */
 
 .title img {
   height: 22px;
@@ -107,12 +94,11 @@ h1 {
 
 .sub-title a {
   text-decoration: none;
-  /* color: #4c4c4c; */
   color: white;
 }
 
 .sub-title-link {
-  transition: 500ms;
+  transition: 750ms;
   border-bottom: 1px solid transparent;
 }
 
@@ -157,7 +143,6 @@ h1 {
   margin: 10px 10px 10px 0;
   border: 1px solid rgba(110, 110, 110, 0.3);
   overflow: scroll;
-  /* box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); */
 }
 
 .list-header {
@@ -165,7 +150,6 @@ h1 {
   background: #fff;
   padding: 0 17px;
   border-bottom: 1px solid rgba(110, 110, 110, 0.3);
-  /* padding: 10px; */
 }
 
 .list-headline {
@@ -183,7 +167,7 @@ h1 {
   font-size: 1.3rem;
 }
 
-#list-body {
+.list-body {
   background-color: #efefef;
   padding: 6px 7px;
   justify-content: center;
@@ -199,7 +183,7 @@ h1 {
   margin: 5px 0px;
   cursor: pointer;
   display: inline;
-  transition: 500ms;
+  transition: 750ms;
   border-bottom: 1px solid transparent;
 }
 
@@ -244,21 +228,25 @@ h1 {
   border-bottom: 1px solid rgba(110, 110, 110, 0.3);
 }
 
-.list-subhead p:first-child {
+.list-subhead-title {
   margin: 8px 0;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.list-subhead p:nth-child(2) {
+.list-subhead-desc {
   margin: 5px 0;
 }
 
-.list-subhead p:nth-child(3) {
+.list-subhead-hover {
   font-style: oblique;
   margin: 5px 0;
   font-size: 0.8em;
   opacity: 0.7;
+}
+
+.list-subhead-toggle {
+  display: none;
 }
 
 #list-body.priority-gx {
@@ -323,26 +311,20 @@ button:hover {
   display: flex;
   justify-content: space-between;
   padding: 0 10px;
-  /* height: calc(28vh - 10px); */
 }
 
 .timeline-wrapper {
-  /* width: 65vw; */
   height: calc(28vh - 10px);
   flex-grow: 2;
   margin-right: 10px;
 }
 
 .vehtyp-wrapper {
-  /* width: 28vw; */
   height: calc(28vh - 10px);
 }
 
 #timeline-chart,
 #vehtyp-chart {
-  /* width: 60vw; */
-  /* height: 100%; */
-  /* margin: 0 10px 10px 10px; */
   padding: 0 10px;
   border: 1px solid rgba(110, 110, 110, 0.3);
 }
@@ -421,7 +403,24 @@ button:hover {
     height: auto;
   }
 
-  .list-subhead p:nth-child(3) {
+  .list-subhead-toggle {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .esri-icon-arrow-down-circled,
+  .esri-icon-arrow-up-circled {
+    font-size: 1.4rem;
+    cursor: pointer;
+  }
+
+  #list-subhead-desc-only,
+  .list-subhead-hover {
+    display: none;
+  }
+
+  #priority-gx {
     display: none;
   }
 }
