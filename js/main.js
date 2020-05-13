@@ -21,6 +21,7 @@ require([
   'esri/core/watchUtils',
   'esri/widgets/Home',
   'esri/widgets/Search',
+  'esri/widgets/BasemapToggle',
 ], function (
   Map,
   MapView,
@@ -29,7 +30,8 @@ require([
   Graphic,
   watchUtils,
   Home,
-  Search
+  Search,
+  BasemapToggle
 ) {
   const ctx1 = document.getElementById('timeline-chart').getContext('2d');
 
@@ -63,9 +65,9 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: '#c8c8c8',
+      color: '#BCBCBC',
       outline: null,
-      size: 4,
+      size: 3,
     },
   };
 
@@ -73,9 +75,10 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: '#b4b4b4',
+      color: '#c1c1c1',
+
       outline: {
-        color: '#828282',
+        color: '#4F4F4F',
         width: 0.5,
       },
       size: 8,
@@ -137,7 +140,7 @@ require([
   });
 
   let map = new Map({
-    basemap: 'gray-vector',
+    basemap: 'topo',
     layers: [crossings],
   });
 
@@ -174,9 +177,9 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: '#E4AF2A',
+      color: '#CB9611',
       outline: null,
-      size: 4,
+      size: 3,
     },
   };
 
@@ -186,7 +189,7 @@ require([
       type: 'simple-marker',
       color: '#E4AF2A',
       outline: {
-        color: '#C6910C',
+        color: '#935E00',
         width: 0.5,
       },
       size: 8,
@@ -273,25 +276,39 @@ require([
         outFields: ['CrossingID', 'Street'],
         name: 'Crossing ID or Street Name',
         placeholder: 'Search Crossing ID or Street',
-        scale: 24414,
+        scale: 15000,
       },
     ],
   });
 
-  map.add(incByCrossingLayer);
-  // Adds home button
-  mapview.ui.add(homeBtn, 'top-left');
+  var basemapToggle = new BasemapToggle({
+    view: mapview,
+    nextBasemap: 'hybrid',
+  });
 
   const viewportWidth =
     window.innerWidth || document.documentElement.clientWidth;
-  // let homeScale = viewportWidth > 650 ? 3750000 : 8000000;
-  // let homeCenter = viewportWidth > 650 ? [-89.5, 41.1] : [-89.5, 40.2];
-  let homeScale = viewportWidth > 680 ? 3750000 : 8000000;
-  let homeCenter = viewportWidth > 680 ? [-89.5, 41.1] : [-89.5, 40.2];
+  let homeScale = viewportWidth >= 1024 ? 8000000 : 3750000;
+  let homeCenter =
+    viewportWidth >= 1024
+      ? [-89.5, 39.8]
+      : viewportWidth > 414
+      ? [-89.5, 40.8]
+      : [-89.5, 41.4];
   mapview.scale = homeScale;
   mapview.center = homeCenter;
-  //formerly: scale: 24414
   let zoomScale = 15000;
+
+  //on mobile, relocates basemapToggle away from overlapping the densest area of crossings
+  if (viewportWidth > 414) {
+    mapview.ui.add(basemapToggle, 'top-right');
+  } else {
+    mapview.ui.add(basemapToggle, 'bottom-left');
+  }
+
+  map.add(incByCrossingLayer);
+  // Adds home button
+  mapview.ui.add(homeBtn, 'top-left');
 
   //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
@@ -304,15 +321,16 @@ require([
     watchUtils.whenFalseOnce(mapview, 'updating', (event) => {
       spinner.remove();
     });
+
     var allIncidents, allCrossings, highlight;
 
     mapview.watch('scale', (newValue) => {
-      crossings.renderer = newValue <= 187500 ? largeGxPoints : smallGxPoints;
+      crossings.renderer = newValue <= 450500 ? largeGxPoints : smallGxPoints;
     });
 
     mapview.watch('scale', (newValue) => {
       incByCrossingLayer.renderer =
-        newValue <= 187500 ? largeGxIncPoints : smallGxIncPoints;
+        newValue <= 450500 ? largeGxIncPoints : smallGxIncPoints;
     });
 
     incidents.queryFeatures({ orderByFields: ['DATE ASC'] }).then((results) => {
@@ -493,9 +511,7 @@ require([
           //popup on mouseover
           mapview.on('pointer-move', (event) => {
             mapview.hitTest(event).then((response) => {
-              //**response length ALWAYS > 0 bc pointer on basemap returns a result */
-
-              if (response.results.length > 1 && viewportWidth > 680) {
+              if (response.results.length && viewportWidth > 680) {
                 const feature = response.results.filter((result) => {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
@@ -535,7 +551,7 @@ require([
             mapview.popup.visible = false;
 
             mapview.hitTest(event).then((response) => {
-              if (response.results.length > 1) {
+              if (response.results.length) {
                 let feature = response.results.filter((result) => {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
