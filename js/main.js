@@ -9,7 +9,7 @@ import {
   labelsByYear,
   formatMoYearKeys,
 } from './chart_helpers.js';
-import { createIncItem } from './list_selected_gx.js';
+import { createIncItem } from './list_selected_gx_funcs.js';
 import './to_title_case.js';
 
 require([
@@ -144,8 +144,10 @@ require([
   let mapview = new MapView({
     container: 'mapview',
     map: map,
-    //center: [-89.5, 40.4],
-    // scale: 3750000,
+    constraints: {
+      minZoom: 5,
+      rotationEnabled: false,
+    },
     highlightOptions: {
       fillOpacity: 0,
       haloColor: '#de2900',
@@ -282,8 +284,10 @@ require([
 
   const viewportWidth =
     window.innerWidth || document.documentElement.clientWidth;
-  let homeScale = viewportWidth > 650 ? 3750000 : 8000000;
-  let homeCenter = viewportWidth > 650 ? [-89.5, 41.1] : [-89.5, 40.2];
+  // let homeScale = viewportWidth > 650 ? 3750000 : 8000000;
+  // let homeCenter = viewportWidth > 650 ? [-89.5, 41.1] : [-89.5, 40.2];
+  let homeScale = viewportWidth > 680 ? 3750000 : 8000000;
+  let homeCenter = viewportWidth > 680 ? [-89.5, 41.1] : [-89.5, 40.2];
   mapview.scale = homeScale;
   mapview.center = homeCenter;
   //formerly: scale: 24414

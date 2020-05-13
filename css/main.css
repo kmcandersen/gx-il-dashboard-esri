@@ -1,4 +1,5 @@
 * {
+  /* border: 1px solid red; */
   box-sizing: border-box;
 }
 
@@ -54,15 +55,15 @@ body {
   border: 1px solid #00457c;
   color: white;
   padding: 15px 10px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  /* display: flex;
+  align-items: center; */
   height: 10vh;
 }
 
-.title-group {
+.title-row {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .title {
@@ -81,7 +82,12 @@ body {
 
 h1 {
   font-size: 1.2em;
-  margin: 0 10px 5px 0;
+  margin: 0 10px 0 0;
+}
+
+#search-container {
+  height: 32px;
+  /* align-self: flex-start; */
 }
 
 .sub-title {
@@ -90,6 +96,8 @@ h1 {
   letter-spacing: 1px;
   margin: 0;
   font-size: 0.9em;
+  position: relative;
+  top: -4px;
 }
 
 .sub-title a {
@@ -103,13 +111,7 @@ h1 {
 }
 
 .sub-title-link:hover {
-  /* border-color: #4c4c4c; */
   border-color: white;
-}
-
-#search-container {
-  height: 32px;
-  align-self: flex-start;
 }
 
 /* Map and List */
@@ -329,10 +331,19 @@ button:hover {
   border: 1px solid rgba(110, 110, 110, 0.3);
 }
 
-@media all and (max-width: 850px) {
+/* media queries */
+
+/* phones in landscape orientation */
+@media only screen and (max-device-height: 414px) and (orientation: landscape) {
+  .timeline-wrapper,
+  .vehtyp-wrapper {
+    height: 150px;
+  }
+}
+
+@media all and (max-width: 812px) {
   .header {
     height: 90px;
-    justify-content: 'flex-start';
   }
 
   #mapview {
@@ -343,11 +354,12 @@ button:hover {
     height: calc(84vh - 10px);
   }
 
-  .title img {
-    display: none;
-  }
-  .title {
+  .title-row {
     flex-direction: column;
+  }
+
+  .sub-title {
+    display: none;
   }
 
   #chart-row {
@@ -375,14 +387,14 @@ button:hover {
   .header {
     width: 100vw;
     height: 120px;
-    justify-content: flex-start;
+    /* justify-content: flex-start; */
   }
 
-  .title {
-    flex-direction: row;
+  .title-row {
+    display: block;
   }
 
-  .sub-title {
+  .title img {
     display: none;
   }
 
@@ -422,5 +434,40 @@ button:hover {
 
   #priority-gx {
     display: none;
+  }
+}
+
+/* iPad portrait */
+@media only screen and (min-device-width: 768px) and (max-device-width: 1024px) and (orientation: portrait) {
+  .header {
+    height: 105px;
+  }
+
+  #search-container {
+    margin-top: 5px;
+  }
+
+  .main {
+    height: 50vh;
+  }
+
+  #mapview,
+  #list-panel {
+    height: 98%;
+  }
+
+  #chart-row {
+    height: 50vw;
+  }
+}
+
+/* iPad Pro portrait */
+@media only screen and (min-device-width: 1024px) and (max-device-width: 1366px) and (orientation: portrait) {
+  #chart-row {
+    flex-direction: column;
+  }
+
+  .timeline-wrapper {
+    margin: 12px 0;
   }
 }
