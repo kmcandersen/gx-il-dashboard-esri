@@ -8,19 +8,14 @@ export const typeVehicle = (typveh) => {
     case 'C':
     case 'D':
       return 'Truck';
-    case 'F':
-      return 'Bus';
-    case 'G':
-      return 'School bus';
-    case 'H':
-      return 'Motorcycle';
     case 'K':
     case 'Q':
-      return 'Ped/Bicycle';
+      return 'Ped/Bike';
     default:
-      return '';
+      return 'Other';
   }
 };
+
 //public or private crossing
 export const pubXing = (pub) => {
   switch (pub) {

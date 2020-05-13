@@ -1,5 +1,15 @@
 import { countIncByGx, createGXingItem } from './gx_summary_funcs.js';
-import { createIncItem } from './list_selected_gx.js';
+import {
+  timeChartProperties,
+  vehTypChartProperties,
+  getVehCatTotAll,
+  countIncByYearMo,
+  colorBarsByYear,
+  countIncByYear,
+  labelsByYear,
+  formatMoYearKeys,
+} from './chart_helpers.js';
+import { createIncItem } from './list_selected_gx_funcs.js';
 import './to_title_case.js';
 
 require([
@@ -11,6 +21,7 @@ require([
   'esri/core/watchUtils',
   'esri/widgets/Home',
   'esri/widgets/Search',
+  'esri/widgets/BasemapToggle',
 ], function (
   Map,
   MapView,
@@ -19,8 +30,15 @@ require([
   Graphic,
   watchUtils,
   Home,
-  Search
+  Search,
+  BasemapToggle
 ) {
+  const ctx1 = document.getElementById('timeline-chart').getContext('2d');
+
+  const ctx2 = document.getElementById('vehtyp-chart').getContext('2d');
+
+  Chart.defaults.global.defaultFontFamily = 'Avenir Next W00';
+
   //note: not visible; used as input to countIncByGx func
   let incidents = new GeoJSONLayer({
     title: 'incidents',
@@ -47,9 +65,9 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: '#c8c8c8',
+      color: '#BCBCBC',
       outline: null,
-      size: 4,
+      size: 3,
     },
   };
 
@@ -57,9 +75,10 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: '#b4b4b4',
+      color: '#c1c1c1',
+
       outline: {
-        color: '#828282',
+        color: '#4F4F4F',
         width: 0.5,
       },
       size: 8,
@@ -121,15 +140,17 @@ require([
   });
 
   let map = new Map({
-    basemap: 'gray-vector',
+    basemap: 'topo',
     layers: [crossings],
   });
 
   let mapview = new MapView({
     container: 'mapview',
     map: map,
-    //center: [-89.5, 40.4],
-    // scale: 3750000,
+    constraints: {
+      minZoom: 5,
+      rotationEnabled: false,
+    },
     highlightOptions: {
       fillOpacity: 0,
       haloColor: '#de2900',
@@ -156,9 +177,9 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: 'orange',
+      color: '#CB9611',
       outline: null,
-      size: 4,
+      size: 3,
     },
   };
 
@@ -166,9 +187,9 @@ require([
     type: 'simple',
     symbol: {
       type: 'simple-marker',
-      color: 'orange',
+      color: '#E4AF2A',
       outline: {
-        color: '#d17e21',
+        color: '#935E00',
         width: 0.5,
       },
       size: 8,
@@ -235,11 +256,11 @@ require([
     definitionExpression: 'incidentTot > 0',
   });
 
-  var homeBtn = new Home({
+  const homeBtn = new Home({
     view: mapview,
   });
 
-  var searchWidget = new Search({
+  const searchWidget = new Search({
     view: mapview,
     container: 'search-container',
     includeDefaultSources: false,
@@ -255,43 +276,61 @@ require([
         outFields: ['CrossingID', 'Street'],
         name: 'Crossing ID or Street Name',
         placeholder: 'Search Crossing ID or Street',
-        scale: 24414,
+        scale: 15000,
       },
     ],
   });
+
+  var basemapToggle = new BasemapToggle({
+    view: mapview,
+    nextBasemap: 'hybrid',
+  });
+
+  const viewportWidth =
+    window.innerWidth || document.documentElement.clientWidth;
+  let homeScale = viewportWidth >= 1024 ? 8000000 : 3750000;
+  let homeCenter =
+    viewportWidth >= 1024
+      ? [-89.5, 39.8]
+      : viewportWidth > 414
+      ? [-89.5, 40.8]
+      : [-89.5, 41.4];
+  mapview.scale = homeScale;
+  mapview.center = homeCenter;
+  let zoomScale = 15000;
+
+  //on mobile, relocates basemapToggle away from overlapping the densest area of crossings
+  if (viewportWidth > 414) {
+    mapview.ui.add(basemapToggle, 'top-right');
+  } else {
+    mapview.ui.add(basemapToggle, 'bottom-left');
+  }
 
   map.add(incByCrossingLayer);
   // Adds home button
   mapview.ui.add(homeBtn, 'top-left');
 
-  var viewportWidth = window.innerWidth || document.documentElement.clientWidth;
-  var homeScale = viewportWidth > 680 ? 3750000 : 8000000;
-  var homeCenter = viewportWidth > 680 ? [-89.5, 40.4] : [-89.5, 40.0];
-  mapview.scale = homeScale;
-  mapview.center = homeCenter;
-  //formerly: scale: 24414
-  var zoomScale = 15000;
-
   //Apply Edits func (to populate feature layer), & watch of scale change on incByCrossingLayer, works wo this:
   //mapview.whenLayerView(incByCrossingLayer).then(function (layerViewGxInc) {
   //layerViewCrossings needed for hitTest highlight:
-  mapview.whenLayerView(crossings).then(function (layerViewCrossings) {
+  mapview.whenLayerView(crossings).then((layerViewCrossings) => {
     document.querySelector('.esri-search__input').onfocusout = null;
 
     let spinner = document.querySelector('.loading-spinner');
     // Hide the loading indicator when the view stops updating
-    watchUtils.whenFalseOnce(mapview, 'updating', function (event) {
+    watchUtils.whenFalseOnce(mapview, 'updating', (event) => {
       spinner.remove();
     });
+
     var allIncidents, allCrossings, highlight;
 
-    mapview.watch('scale', function (newValue) {
-      crossings.renderer = newValue <= 187500 ? largeGxPoints : smallGxPoints;
+    mapview.watch('scale', (newValue) => {
+      crossings.renderer = newValue <= 450500 ? largeGxPoints : smallGxPoints;
     });
 
-    mapview.watch('scale', function (newValue) {
+    mapview.watch('scale', (newValue) => {
       incByCrossingLayer.renderer =
-        newValue <= 187500 ? largeGxIncPoints : smallGxIncPoints;
+        newValue <= 450500 ? largeGxIncPoints : smallGxIncPoints;
     });
 
     incidents.queryFeatures({ orderByFields: ['DATE ASC'] }).then((results) => {
@@ -301,29 +340,27 @@ require([
         .then((results) => {
           allCrossings = results.features;
           const incByGxArr = countIncByGx(allCrossings, allIncidents);
-
           addFeatures(incByGxArr);
 
-          //on load, populate the List of crossings with incidents
+          //on load, populate the List of Priority crossings
           const gxListPanel = createGXingItem(incByGxArr);
-          //add xings with inc to dom
+          //add Priority List to DOM
           document
             .getElementById('list-panel')
             .insertAdjacentHTML('beforeend', gxListPanel);
 
-          //initial load: List event selectors
-          //Gx with Incidents List: on mouseover, shading on list & feature highlighted
+          //initial load: add event listeners, highlight trigger on Priority Gx List items (on mouseover, shading on list & feature highlighted)
           const listItemEffects = () => {
             const listItems = document.querySelectorAll('.list-item');
             listItems.forEach((item) => {
-              item.addEventListener('mouseover', (event) => {
+              item.addEventListener('mouseover', () => {
                 item.classList.add('list-item-highlight');
-                //
-                var query = crossings.createQuery();
-                var queryString =
+                //note: this portion also in magnifyHandler:
+                let query = crossings.createQuery();
+                let queryString =
                   'CrossingID = ' + "'" + item.dataset.gxid + "'";
                 query.where = queryString;
-                crossings.queryFeatures(query).then(function (result) {
+                crossings.queryFeatures(query).then((result) => {
                   if (highlight) {
                     highlight.remove();
                   }
@@ -333,7 +370,7 @@ require([
               });
             });
             listItems.forEach((item) => {
-              item.addEventListener('mouseout', (event) => {
+              item.addEventListener('mouseout', () => {
                 item.classList.remove('list-item-highlight');
                 if (highlight) {
                   highlight.remove();
@@ -342,11 +379,11 @@ require([
             });
           };
 
-          //Gx with Incidents List: click on Gxid No. > Zooms to Gx
+          //Priority Gx List: click on Gxid No. > Zooms to Gx
           const listItemHeaderEffects = () => {
             const itemHeaders = document.querySelectorAll('.item-headline');
             itemHeaders.forEach((itemHdr) => {
-              itemHdr.addEventListener('click', (event) => {
+              itemHdr.addEventListener('click', () => {
                 let gxid = itemHdr.textContent.slice(4);
                 mapview
                   .goTo({
@@ -361,31 +398,130 @@ require([
                       console.error(error);
                     }
                   });
+                //Populate Selected Gx incident List
                 fillIncidentList(gxid);
+                //Populate Charts
+                createVehTypChartSel(gxid);
+                //Calculate Collisions by Year for selected gx, to populate Chart
+                const incByYear = countIncByYear(incByGxArr, gxid, 2015, 2019);
+                createIncByYearSel(incByYear);
               });
             });
           };
+          //no list item shading, map highlight needed on hover, on Mobile
           if (viewportWidth > 680) {
             listItemEffects();
           }
           listItemHeaderEffects();
 
+          //initial load; toggle Priority List only needed on Mobile
+          if (viewportWidth < 680) {
+            document
+              .getElementById('toggle-list')
+              .addEventListener('click', () => toggleListHandler());
+          }
+
+          //Vehicle Type Charts - All & Selected Gx
+          const vehTypChart = new Chart(ctx2, vehTypChartProperties);
+          //Calculate overall total of Collisions by Type to populate Chart
+          const createVehTypChartAll = () => {
+            vehTypChart.options.scales.yAxes[0].ticks.stepSize = 50;
+            vehTypChart.data.labels = Object.keys(incByGxArr[0].incByTypEq);
+            vehTypChart.data.datasets[0].data = Object.values(
+              getVehCatTotAll(incByGxArr)
+            );
+            vehTypChart.options.title.text = 'Vehicle Type | All Crossings';
+            vehTypChart.update();
+          };
+          createVehTypChartAll();
+
+          //Get Collisions by Type for selected gx to populate Chart
+          const createVehTypChartSel = (gxid) => {
+            for (let i = 0; i < incByGxArr.length; i++) {
+              if (incByGxArr[i].gxid === gxid) {
+                vehTypChart.options.scales.yAxes[0].ticks.stepSize = 1;
+                vehTypChart.data.labels = Object.keys(incByGxArr[i].incByTypEq);
+                vehTypChart.data.datasets[0].data = Object.values(
+                  incByGxArr[i].incByTypEq
+                );
+                vehTypChart.options.title.text =
+                  'Vehicle Type | Selected Crossing';
+                vehTypChart.update();
+              }
+            }
+          };
+
+          //Collisions over Time Charts - All (by Month) & Selected Gx (by Year)
+          const timeCountChart = new Chart(ctx1, timeChartProperties);
+
+          const incByYearMo = countIncByYearMo(allIncidents, 2015, 2019);
+          //Populate collisions over time Chart for selected gx (by year), using incByYear arr calculated when gx selected
+          //Nov & Dec 2019 sliced & not displayed, bc no data for these months
+          const createIncByMonthAll = (incByYearMo) => {
+            timeCountChart.data.datasets[0].backgroundColor = colorBarsByYear();
+            timeCountChart.options.title.text =
+              'Collisions by Month | All Crossings';
+            timeCountChart.data.labels = labelsByYear(2015, 2019).slice(0, -2);
+            timeCountChart.data.datasets[0].data = Object.values(
+              incByYearMo
+            ).slice(0, -2);
+            timeCountChart.options.scales.yAxes[0].ticks.stepSize = 4;
+
+            //func for custom tooltip title, since x labels (the normal tooltip source) display either year or ''
+            //wo this, title for Jan tooltips = year:
+            const moYearKeys = Object.keys(incByYearMo).slice(0, -2);
+            const tooltipKeys = formatMoYearKeys(moYearKeys);
+            timeCountChart.options.tooltips.callbacks.title = (
+              tooltipItems,
+              data
+            ) => {
+              return `${tooltipKeys[tooltipItems[0].index]}`;
+            };
+
+            timeCountChart.update();
+          };
+          createIncByMonthAll(incByYearMo);
+
+          //Populate collisions over time Chart for selected gx (by year), using incByYear arr, calculated when gx selected
+          const createIncByYearSel = (incByYear) => {
+            timeCountChart.data.labels = Object.keys(incByYear);
+            const tooltipKeys = Object.keys(incByYear);
+            //tooltip title from createIncByMonthAll will still apply if not replaced
+            timeCountChart.options.tooltips.callbacks.title = (
+              tooltipItems,
+              data
+            ) => {
+              return `${tooltipKeys[tooltipItems[0].index]}`;
+            };
+
+            timeCountChart.data.datasets[0].data = Object.values(incByYear);
+            timeCountChart.data.datasets[0].backgroundColor = [
+              '#c6b29f',
+              '#A6B6C2',
+              '#A7A1AB',
+              '#B0B6A5',
+              '#d4b1ad',
+            ];
+            timeCountChart.options.scales.yAxes[0].ticks.stepSize = 1;
+            timeCountChart.options.title.text =
+              'Collisions by Year | Selected Crossing';
+            timeCountChart.update();
+          };
+
           //popup on mouseover
           mapview.on('pointer-move', (event) => {
             mapview.hitTest(event).then((response) => {
-              //**response ALWAYS has a length bc pointer on basemap returns a result */
-
-              if (response.results.length > 1 && viewportWidth > 680) {
-                const feature = response.results.filter(function (result) {
+              if (response.results.length && viewportWidth > 680) {
+                const feature = response.results.filter((result) => {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
 
-                var Latitude = feature.attributes.Latitude;
-                var Longitude = feature.attributes.Longitude;
-                var Station = feature.attributes.Station
+                let Latitude = feature.attributes.Latitude;
+                let Longitude = feature.attributes.Longitude;
+                let Station = feature.attributes.Station
                   ? feature.attributes.Station.toLowerCase().toTitleCase()
                   : 'NA';
-                var Street = feature.attributes.Street
+                let Street = feature.attributes.Street
                   ? feature.attributes.Street.toLowerCase().toTitleCase()
                   : 'NA';
 
@@ -415,12 +551,12 @@ require([
             mapview.popup.visible = false;
 
             mapview.hitTest(event).then((response) => {
-              if (response.results.length > 1) {
-                var feature = response.results.filter((result) => {
+              if (response.results.length) {
+                let feature = response.results.filter((result) => {
                   return result.graphic.layer === crossings;
                 })[0].graphic;
 
-                // Highlight feature
+                //Highlight feature
                 highlight = layerViewCrossings.highlight(feature);
 
                 mapview
@@ -439,33 +575,44 @@ require([
 
                 //diff than crossing ID in Search:
                 const selGxId = feature.attributes.CrossingID;
+                //populate selected gx List
                 fillIncidentList(selGxId);
+                //populate Charts for selected gx
+                createVehTypChartSel(selGxId);
+                const incByYear = countIncByYear(
+                  incByGxArr,
+                  selGxId,
+                  2015,
+                  2019
+                );
+                createIncByYearSel(incByYear);
               }
             });
           });
 
           //selection via Search:
-          searchWidget.on('select-result', function (event) {
+          searchWidget.on('select-result', (event) => {
             mapview.goTo({
               scale: zoomScale,
             });
-
             if (highlight) {
               highlight.remove();
             }
-
             mapview.popup.visible = false;
-
+            //get gxid from selected gx
             const selGxId = event.result.feature.attributes.CrossingID;
 
             fillIncidentList(selGxId);
+            createVehTypChartSel(selGxId);
+            const incByYear = countIncByYear(incByGxArr, selGxId, 2015, 2019);
+            createIncByYearSel(incByYear);
           });
 
           function addFeatures(arr) {
             // create an array of graphics based on the data above
             var graphics = [];
             var graphic;
-            for (var i = 0; i < arr.length; i++) {
+            for (let i = 0; i < arr.length; i++) {
               graphic = new Graphic({
                 geometry: {
                   type: 'point',
@@ -493,8 +640,8 @@ require([
                 // if features were added - call queryFeatures to return
                 //newly added graphics
                 if (results.addFeatureResults.length > 0) {
-                  var objectIds = [];
-                  results.addFeatureResults.forEach(function (item) {
+                  let objectIds = [];
+                  results.addFeatureResults.forEach((item) => {
                     objectIds.push(item.objectId);
                   });
                   // query the newly added features from the layer
@@ -517,10 +664,10 @@ require([
             }
             const item = document.getElementById('for-zoom');
 
-            var query = crossings.createQuery();
-            var queryString = 'CrossingID = ' + "'" + item.dataset.gxid + "'";
+            let query = crossings.createQuery();
+            let queryString = 'CrossingID = ' + "'" + item.dataset.gxid + "'";
             query.where = queryString;
-            crossings.queryFeatures(query).then(function (result) {
+            crossings.queryFeatures(query).then((result) => {
               if (highlight) {
                 highlight.remove();
               }
@@ -558,17 +705,31 @@ require([
                 }
               });
 
-            //remove existing List; populate the List of crossings with incidents
+            //remove Selected Gx List
             const listContent = document.getElementById('list-content');
             if (listContent) {
               listContent.remove();
             }
+            //populate the Priority Gx List
             const gxListItem = createGXingItem(incByGxArr);
             document
               .getElementById('list-panel')
               .insertAdjacentHTML('beforeend', gxListItem);
-            listItemEffects();
+
+            //toggle Priority List only needed on Mobile
+            if (viewportWidth < 680) {
+              document
+                .getElementById('toggle-list')
+                .addEventListener('click', () => toggleListHandler());
+            }
+            //no list item shading, map highlight needed on hover, on Mobile
+            if (viewportWidth > 680) {
+              listItemEffects();
+            }
             listItemHeaderEffects();
+            //populate the All Gx Charts
+            createIncByMonthAll(incByYearMo);
+            createVehTypChartAll();
           };
 
           const fillIncidentList = (selGxId) => {
@@ -584,12 +745,29 @@ require([
             document
               .getElementById('list-panel')
               .insertAdjacentHTML('beforeend', incListItem);
+            //add event handlers
             document
               .querySelector('.esri-icon-zoom-in-magnifying-glass')
               .addEventListener('click', () => magnifyHandler());
             document
               .getElementById('show-all')
               .addEventListener('click', () => clearBtnHandler());
+          };
+
+          //for Mobile only: shows/hides Priority Gx list to conserve space
+          const toggleListHandler = () => {
+            const toggleIcon = document.getElementById('toggle-list');
+            const listBodyPriority = document.getElementById('priority-gx');
+            console.log(listBodyPriority);
+            if (toggleIcon.classList.contains('esri-icon-arrow-down-circled')) {
+              toggleIcon.classList.remove('esri-icon-arrow-down-circled');
+              toggleIcon.classList.add('esri-icon-arrow-up-circled');
+              listBodyPriority.style.display = 'flex';
+            } else {
+              toggleIcon.classList.remove('esri-icon-arrow-up-circled');
+              toggleIcon.classList.add('esri-icon-arrow-down-circled');
+              listBodyPriority.style.display = 'none';
+            }
           };
 
           //end of crossings.queryFeatures

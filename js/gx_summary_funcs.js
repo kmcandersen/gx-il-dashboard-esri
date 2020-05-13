@@ -1,10 +1,9 @@
 //run countIncByGx to create a new array, with an object for each crossing in IL, and a summary of characteristics and incidents (if applicable) at the crossing. This array is the data source for the incByCrossingLayer feature layer in main.js, and a definitionExpression limits visible points to the crossings with incidents.
 
-//variable name + 1: from crossings geojson, variable name + 2: from incidents geojson
-
 import './to_title_case.js';
-import { counties } from './county_list.js';
+import { counties } from '../data/county_list.js';
 import { getCountyName } from './category_helpers.js';
+import { getVehCatTotGx } from './chart_helpers.js';
 
 export const countIncByGx = (crossingsArr, incidentsArr) => {
   //loop thru crossings, create an obj in result arr for each crossing
@@ -14,6 +13,7 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
   for (let i = 0; i < crossingsArr.length; i++) {
     const p = crossingsArr[i].attributes;
 
+    //property name + 1: from crossings geojson, variable name + 2: from incidents geojson
     //implementing propertyName.toLowerCase().toTitleCase() here didn't work (too soon)
     gxTally.push({
       ObjectID: p.OBJECTID,
@@ -30,6 +30,13 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
       incidentTot: 0,
       injuryTot: 0,
       fatalityTot: 0,
+      incTimestamps: [],
+      incByTypEq: {
+        Auto: 0,
+        Truck: 0,
+        'Ped/Bike': 0,
+        Other: 0,
+      },
       lat: p.Latitude,
       long: p.Longitude,
     });
@@ -40,15 +47,15 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
     for (let k = 0; k < incidentsArr.length; k++) {
       const q = incidentsArr[k].attributes;
       if (gxTally[j].gxid === q.GXID) {
-        //note: the below properties in gxTally being overwritten with properties from each incident; tho being used as a check of properties in crossing file
-        //properties being Pushed so I can inspect values coming from Incidents records
+        //note: the below properties in gxTally being overwritten with properties from each incident; some being used as a check of properties in crossing file
         gxTally[j].streetName2 = q.HIGHWAY;
         gxTally[j].station2 = q.STATION;
-        gxTally[j].city2.push(q.CITY);
         gxTally[j].pubXing2 = q.PUBLIC;
         gxTally[j].incidentTot += 1;
         gxTally[j].injuryTot += q.TOTINJ;
         gxTally[j].fatalityTot += q.TOTKLD;
+        gxTally[j].incTimestamps.push(q.DATE);
+        getVehCatTotGx(gxTally[j], q.TYPVEH);
       }
     }
 
@@ -65,9 +72,9 @@ export const countIncByGx = (crossingsArr, incidentsArr) => {
         ? gxTally[j].station2.toLowerCase().toTitleCase()
         : gxTally[j].station1.toLowerCase().toTitleCase();
 
+    //convert county Code to Name
     gxTally[j].county = getCountyName(counties, gxTally[j].county1);
   }
-
   return gxTally;
 };
 
@@ -94,7 +101,7 @@ export const createGXingItem = (gxSummArr) => {
       long,
     } = gxSummArr[i];
     if (incidentTot > 0) {
-      //for gx with inc, add to totals
+      //for gx with inc, add to overall totals
       gxWithIncCount += 1;
       incidentAll += incidentTot;
       injuryAll += injuryTot;
@@ -109,14 +116,18 @@ export const createGXingItem = (gxSummArr) => {
           <p style="margin-top: 5px;">${incidentAll} collisions &nbsp;|&nbsp; ${injuryAll} injured &nbsp;|&nbsp; ${fatalityAll} fatalities</p>
         </div>
         <div class="list-subhead">
-          <p>Priority Crossings</p>
-          <p>3+ collisions</p>
-          <p>Hover on list item to highlight map location</p>
-        </div>
-        <div id="list-body" class="priority-gx">
+          <p class="list-subhead-title">Priority Crossings</p>
+          <p class="list-subhead-desc" id="list-subhead-desc-only">3+ collisions</p>
+          <div class="list-subhead-toggle">          
+            <p class="list-subhead-desc">3+ collisions</p>
+            <div id="toggle-list" class="esri-icon-arrow-down-circled"></div>
+          </div>
+          <p class="list-subhead-hover">Hover on list item to highlight map location</p>
+          </div>
+        <div class="list-body" id="priority-gx">
 `;
 
-      //for gx with > 2 inc, also create item for DOM
+      //for gx with > 2 inc, also create item for DOM Priority List
       if (incidentTot > 2) {
         htmlStringGx += `<div class="list-item" data-gxid=${gxid}>                
           <div class="item-header">

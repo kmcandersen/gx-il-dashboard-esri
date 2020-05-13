@@ -5,7 +5,7 @@ import './to_title_case.js';
 
 //generates html for Incident List for selected crossing (header & list items)
 
-//for selected gx (click or search)
+//for selected gx (run via click on Priority List, Map hitTest or Search)
 //loop thru incByGxArr, if gxid matches, populate header summary
 //loop thru incidents looking for matching gx, create an incident item
 export const createIncItem = (gxid, incByGxArr, incidentArr) => {
@@ -22,7 +22,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
     htmlString = '',
     htmlStringIncidents = '';
 
-  //get *crossing-specific* info for header from array of incident summaries by crossing. 'If' will only be true once.
+  //get *crossing-specific* info for Selected Gx List header from array of incident summary info by crossing. 'If' will only be true once.
   for (let i = 0; i < incByGxArr.length; i++) {
     if (gxid === incByGxArr[i].gxid) {
       railroad1 = incByGxArr[i].railroad1;
@@ -38,8 +38,8 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
     }
   }
 
-  //set up Incident List header
-  //incl button to "clear" selection & show list of all crossings with incidents
+  //set up Selected Gx List header
+  //incl button to "clear" Selected Gx & return to Priority List
   htmlString += `<div id="list-content">
     <div class="list-header">
       <h2 class="list-headline" id="for-zoom" data-gxid=${gxid} data-lat=${lat} data-long=${long}>Crossing No. ${gxid}<div class="esri-icon-zoom-in-magnifying-glass"></div></h2>
@@ -61,7 +61,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
         <div class="item-headline"><div class="esri-icon-link"></div><a href=${`https://icc.illinois.gov/rail-safety/crossing/${gxid}/inventory`}>ICC webpage</a></div>
       </div>
     </div>
-    <div id="list-body">`;
+    <div class="list-body" id="selected-gx">`;
 
   //loop thru incident array, for *incident-specific* data; if gx in array matches selected gx, populate htmlString incident info
   for (let i = 0; i < incidentArr.length; i++) {

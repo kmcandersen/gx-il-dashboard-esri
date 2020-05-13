@@ -24,32 +24,45 @@
     <script type="text/javascript">
       document.getElementByClassName = 'js';
     </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.3/dist/Chart.min.js"></script>
     <script type="text/javascript" src="https://js.arcgis.com/4.15/"></script>
   </head>
   <body>
     <div class="wrapper" id="fouc">
       <header class="header">
         <div class="title-group">
-          <div class="title">
-            <img src="assets/gx-sign.svg" />
-            <h1>
-              Illinois Highway-Rail Grade Crossing Collisions, 2015-2019
-            </h1>
+          <div class="title-row">
+            <div class="title">
+              <img src="assets/gx-sign-blue.svg" />
+              <h1>
+                Illinois Highway-Rail Grade Crossing Collisions, 2015-2019
+              </h1>
+            </div>
+            <div id="search-container"></div>
           </div>
           <h5 class="sub-title">
             Source:
-            <a href="https://safetydata.fra.dot.gov/"
-              >Federal Railroad Administration</a
+            <span class="sub-title-link"
+              ><a href="https://safetydata.fra.dot.gov/"
+                >Federal Railroad Administration</a
+              ></span
             >
           </h5>
         </div>
-        <div id="search-container"></div>
       </header>
       <div class="main">
         <div id="mapview">
           <div class="loading-spinner"></div>
         </div>
         <div id="list-panel"></div>
+      </div>
+      <div id="chart-row">
+        <div class="timeline-wrapper">
+          <canvas id="timeline-chart"></canvas>
+        </div>
+        <div class="vehtyp-wrapper">
+          <canvas id="vehtyp-chart"></canvas>
+        </div>
       </div>
     </div>
     <script type="module" src="./js/main.js"></script>
