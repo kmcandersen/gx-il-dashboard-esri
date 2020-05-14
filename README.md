@@ -14,3 +14,7 @@ Federal Railroad Administration Office of Safety Analysis
 - [Highway-Rail Crossing Database](https://safetydata.fra.dot.gov/OfficeofSafety/publicsite/DownloadCrossingInventoryData.aspx)
 
 Note: The dashboard excludes crossings inside rail yards.
+
+![Dashboard preview][image]
+
+[image]: https://kristenandersen.online/img/dashboard-preview.jpg 'Dashboard preview'
