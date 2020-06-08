@@ -1,6 +1,6 @@
 # Illinois Highway-Rail Grade Crossing Collision Dashboard
 
-[kristenandersen.online/crossings/](https://kristenandersen.online/crossings/)
+[kristenandersen.online/crossings](https://kristenandersen.online/crossings/)
 
 This interactive, responsive dashboard allows users to explore Federal Railroad Administration collision data for Illinois highway-rail grade crossings (where a highway crosses a railroad at grade level). The dashboard shows collision locations and other crossings on a map, lists crossing and collision details, and displays charts of crossing-specific and systemwide data. Users can view data for specific crossings by clicking the crossing on the map, selecting a crossing from the list of "Priority Crossings" (those with three or more collisions during the time range), or searching by crossing ID number or street name.
 
