@@ -42,7 +42,7 @@ export const createIncItem = (gxid, incByGxArr, incidentArr) => {
   //incl button to "clear" Selected Gx & return to Priority List
   htmlString += `<div id="list-content">
     <div class="list-header">
-      <h2 class="list-headline" id="for-zoom" data-gxid=${gxid} data-lat=${lat} data-long=${long}>Crossing No. ${gxid}<div class="esri-icon-zoom-in-magnifying-glass"></div></h2>
+      <h2 class="list-headline" id="for-zoom" data-gxid="${gxid}" data-lat="${lat}" data-long="${long}">Crossing No. ${gxid}<div class="esri-icon-zoom-in-magnifying-glass"></div></h2>
       <div class="list-header-detail">
         <p><strong>Railroad:</strong> ${railroad1}</p> 
         <p><strong>Crossing:</strong> ${streetName}</p>  

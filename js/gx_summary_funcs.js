@@ -129,9 +129,9 @@ export const createGXingItem = (gxSummArr) => {
 
       //for gx with > 2 inc, also create item for DOM Priority List
       if (incidentTot > 2) {
-        htmlStringGx += `<div class="list-item" data-gxid=${gxid}>                
+        htmlStringGx += `<div class="list-item" data-gxid="${gxid}">                
           <div class="item-header">
-            <h3 class="item-headline" data-lat=${lat} data-long=${long}>No. ${gxid}</h3>
+            <h3 class="item-headline" data-lat="${lat}" data-long="${long}">No. ${gxid}</h3>
           </div>
   
           <div class="item-detail">

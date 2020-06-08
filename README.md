@@ -19,4 +19,4 @@ Note: The dashboard excludes crossings inside rail yards.
 
 ![Dashboard preview][image]
 
-[image]: https://kristenandersen.online/img/dashboard-preview.jpg 'Dashboard preview'
+[image]: https://kristenandersen.online/crossings/assets/db-preview.png 'Dashboard preview'

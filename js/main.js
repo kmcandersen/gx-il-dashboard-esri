@@ -365,6 +365,19 @@ require([
                     highlight.remove();
                   }
                   highlight = layerViewCrossings.highlight(result.features);
+                  //map centers on moused-over gx, since highlight is hard to see
+                  mapview
+                    .goTo({
+                      center: [
+                        result.features[0].attributes.Longitude,
+                        result.features[0].attributes.Latitude,
+                      ],
+                    })
+                    .catch(function (error) {
+                      if (error.name != 'AbortError') {
+                        console.error(error);
+                      }
+                    });
                 });
                 //
               });
@@ -381,9 +394,14 @@ require([
 
           //Priority Gx List: click on Gxid No. > Zooms to Gx
           const listItemHeaderEffects = () => {
+            const listPanel = document.getElementById('list-panel');
             const itemHeaders = document.querySelectorAll('.item-headline');
             itemHeaders.forEach((itemHdr) => {
               itemHdr.addEventListener('click', () => {
+                listPanel.scrollTo({
+                  top: 0,
+                  behavior: 'smooth',
+                });
                 let gxid = itemHdr.textContent.slice(4);
                 mapview
                   .goTo({
@@ -758,7 +776,6 @@ require([
           const toggleListHandler = () => {
             const toggleIcon = document.getElementById('toggle-list');
             const listBodyPriority = document.getElementById('priority-gx');
-            console.log(listBodyPriority);
             if (toggleIcon.classList.contains('esri-icon-arrow-down-circled')) {
               toggleIcon.classList.remove('esri-icon-arrow-down-circled');
               toggleIcon.classList.add('esri-icon-arrow-up-circled');
