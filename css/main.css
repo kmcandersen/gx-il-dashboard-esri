@@ -1,5 +1,4 @@
 * {
-  /* border: 1px solid red; */
   box-sizing: border-box;
 }
 
@@ -13,7 +12,7 @@ body {
   margin: 0;
   height: 100%;
   width: 100%;
-  font-family: 'Avenir Next W00';
+  font-family: "Avenir Next W00";
 }
 
 .loading-spinner {
@@ -22,7 +21,7 @@ body {
   top: 50%;
   left: 50%;
   margin-right: -50%;
-  display: 'block';
+  display: "block";
   pointer-events: none;
   width: 4em;
   height: 4em;
@@ -55,15 +54,22 @@ body {
   border: 1px solid #00457c;
   color: white;
   padding: 15px 10px;
-  /* display: flex;
-  align-items: center; */
+  display: flex;
+  align-items: center;
+
   height: 10vh;
 }
 
-.title-row {
+.title-group {
   display: flex;
-  flex-direction: row;
+  align-items: flex-start;
   justify-content: space-between;
+  width: 100%;
+}
+
+.title-col {
+  display: flex;
+  flex-direction: column;
 }
 
 .title {
@@ -83,7 +89,6 @@ h1 {
 
 #search-container {
   height: 32px;
-  /* align-self: flex-start; */
 }
 
 .sub-title {
@@ -284,7 +289,7 @@ button {
   padding: 0 10px;
   color: white;
   font-size: 14px;
-  font-family: 'Avenir Next W00';
+  font-family: "Avenir Next W00";
   transition: background-color 1s ease;
 }
 
@@ -350,7 +355,7 @@ button:hover {
     height: calc(84vh - 10px);
   }
 
-  .title-row {
+  .title-col {
     flex-direction: column;
   }
 
@@ -383,11 +388,11 @@ button:hover {
   .header {
     width: 100vw;
     height: 120px;
-    /* justify-content: flex-start; */
+    justify-content: center;
   }
 
-  .title-row {
-    display: block;
+  .title-group {
+    flex-direction: column;
   }
 
   .title img {
